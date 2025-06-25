@@ -1,6 +1,7 @@
 <script setup>
+import { computed, ref } from 'vue';
 import SearchTypeButton from '../components/SearchTypeButton.vue';
-import { ref } from 'vue';
+import mglassicon from '/src/assets/ma-glass-icon.svg';
 
 const byThemeOn = ref(true);
 
@@ -9,6 +10,17 @@ function showOption(optionId) {
         return;
     }
     byThemeOn.value = !byThemeOn.value;
+}
+
+const searchInputPlaceHolder = computed(() => {
+    return byThemeOn.value ? "Insira um tema" : "Insira um título";
+});
+const searchInput = ref("");
+
+function onInputChange(event) {
+    if (event.target.value[0] === " ") {
+        searchInput.value = "";
+    };
 }
 </script>
 
@@ -20,9 +32,12 @@ function showOption(optionId) {
         </div>
 
         <div class="flex flex-col items-center mt-10">
-            <div v-if="byThemeOn"></div>
+            <input type="text" :placeholder="searchInputPlaceHolder" v-model="searchInput" class="border-2 border-[#5D00F5] rounded-lg p-2 w-[20rem] sm:w-96" @input="onInputChange">
 
-            <div v-if="!byThemeOn"></div>
+            <button class="flex items-center border-1 border-[#5D00F5] rounded-lg py-1 px-2 space-x-2" :class="[ dynamicBarOn || !byThemeOn ? 'mt-8': 'mt-4']">
+                <img :src="mglassicon" alt="glass" class="size-5" draggable="false">
+                <div class="text-lg text-[#5D00F5]">Buscar</div>
+            </button>
         </div>
     </div>
 </template>
