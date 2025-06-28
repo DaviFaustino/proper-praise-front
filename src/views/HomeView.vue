@@ -1,5 +1,6 @@
 <script setup>
-import { computed, ref } from 'vue';
+import axios from 'axios';
+import { computed, reactive, ref } from 'vue';
 import SearchTypeButton from '../components/SearchTypeButton.vue';
 import arrowicon from '/src/assets/arrow.svg';
 import mglassicon from '/src/assets/ma-glass-icon.svg';
@@ -65,6 +66,44 @@ function startDragging(event) {
     window.addEventListener('mousemove', positionKnob);
     window.addEventListener('mouseup', stopDragging);
 }
+
+const isRequestButtonDisabled = computed(() => {
+    return searchInput.value === "" && !dynamicTrackOn.value;
+});
+
+const backendURL = import.meta.env.VITE_BACKEND_URL;
+const versions = reactive({ values:[] })
+const totalPages = ref(0);
+const isVersionsListVisible = computed(() => {
+    return versions.values.length > 0;
+});
+
+function requestVersions(pageNumber) {
+    let fullURL;
+
+    if (searchInput.value !== "") {
+        if (dynamicTrackOn.value) {
+            fullURL = `${backendURL}/api/song?theme=${searchInput.value}&songDynamics=${knobPosition.value}&pageNumber=${pageNumber}`;
+        } else {
+            fullURL = `${backendURL}/api/song?theme=${searchInput.value}&pageNumber=${pageNumber}`;
+        }
+    } else {
+        if (dynamicTrackOn.value) {
+            fullURL = `${backendURL}/api/song?songDynamics=${knobPosition.value}&pageNumber=${pageNumber}`;
+        } else {
+            alert('Informe ao menos um parâmetro de busca.');
+        }
+    }
+
+    axios.get(fullURL)
+        .then(response => {
+            versions.values = response.data.versions;
+            totalPages.value = response.data.totalPages;
+        })
+        .catch(error => {
+            console.log(error);
+        });
+}
 </script>
 
 <template>
@@ -88,7 +127,8 @@ function startDragging(event) {
                 </div>
             </div>
 
-            <button class="flex items-center border-1 border-[#5D00F5] rounded-lg py-1 px-2 space-x-2" :class="[ dynamicTrackOn || !byThemeOn ? 'mt-8': 'mt-4']">
+            <div :class="[ dynamicTrackOn || !byThemeOn ? 'h-8': 'h-4']"></div>
+            <button type="button" :disabled="isRequestButtonDisabled" @click="requestVersions(0)" class="flex items-center border-1 border-[#5D00F5] rounded-lg py-1 px-2 space-x-2" :class="[ isRequestButtonDisabled ? 'opacity-60' : '' ]">
                 <img :src="mglassicon" alt="glass" class="size-5" draggable="false">
                 <div class="text-lg text-[#5D00F5]">Buscar</div>
             </button>
