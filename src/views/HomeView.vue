@@ -71,6 +71,16 @@ const isRequestButtonDisabled = computed(() => {
     return searchInput.value === "" && !dynamicTrackOn.value;
 });
 
+const lastSearch = ref("");
+const lastKnobPosition = ref(null);
+
+function newSearch(pageNumber) {
+    lastSearch.value = searchInput.value;
+    lastKnobPosition.value = knobPosition.value;
+
+    requestVersions(pageNumber);
+}
+
 const backendURL = import.meta.env.VITE_BACKEND_URL;
 const versions = reactive({ values:[] })
 const totalPages = ref(0);
@@ -81,15 +91,15 @@ const isVersionsListVisible = computed(() => {
 function requestVersions(pageNumber) {
     let fullURL;
 
-    if (searchInput.value !== "") {
+    if (lastSearch.value !== "") {
         if (dynamicTrackOn.value) {
-            fullURL = `${backendURL}/api/song?theme=${searchInput.value}&songDynamics=${knobPosition.value}&pageNumber=${pageNumber}`;
+            fullURL = `${backendURL}/api/song?theme=${lastSearch.value}&songDynamics=${lastKnobPosition.value}&pageNumber=${pageNumber}`;
         } else {
-            fullURL = `${backendURL}/api/song?theme=${searchInput.value}&pageNumber=${pageNumber}`;
+            fullURL = `${backendURL}/api/song?theme=${lastSearch.value}&pageNumber=${pageNumber}`;
         }
     } else {
         if (dynamicTrackOn.value) {
-            fullURL = `${backendURL}/api/song?songDynamics=${knobPosition.value}&pageNumber=${pageNumber}`;
+            fullURL = `${backendURL}/api/song?songDynamics=${lastKnobPosition.value}&pageNumber=${pageNumber}`;
         } else {
             alert('Informe ao menos um parâmetro de busca.');
         }
@@ -132,7 +142,7 @@ const dynamicsColors = ['#03b6fa','#09aafa','#0f9ef9','#1493f9','#1a87f9','#207b
             </div>
 
             <div :class="[ dynamicTrackOn || !byThemeOn ? 'h-8': 'h-4']"></div>
-            <button type="button" :disabled="isRequestButtonDisabled" @click="requestVersions(0)" class="flex items-center border-1 border-[#5D00F5] rounded-lg py-1 px-2 space-x-2" :class="[ isRequestButtonDisabled ? 'opacity-60' : '' ]">
+            <button type="button" :disabled="isRequestButtonDisabled" @click="newSearch(0)" class="flex items-center border-1 border-[#5D00F5] rounded-lg py-1 px-2 space-x-2" :class="[ isRequestButtonDisabled ? 'opacity-60' : '' ]">
                 <img :src="mglassicon" alt="glass" class="size-5" draggable="false">
                 <div class="text-lg text-[#5D00F5]">Buscar</div>
             </button>
