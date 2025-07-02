@@ -84,12 +84,14 @@ function newSearch(pageNumber) {
 const backendURL = import.meta.env.VITE_BACKEND_URL;
 const versions = reactive({ values:[] })
 const totalPages = ref(0);
+const currentPage = ref(1);
 const isVersionsListVisible = computed(() => {
     return versions.values.length > 0;
 });
 
 function requestVersions(pageNumber) {
     let fullURL;
+    currentPage.value = pageNumber;
 
     if (lastSearch.value !== "") {
         if (dynamicTrackOn.value) {
@@ -113,6 +115,13 @@ function requestVersions(pageNumber) {
         .catch(error => {
             console.log(error);
         });
+
+    searchInput.value = lastSearch.value;
+    knobPosition.value = lastKnobPosition.value;
+
+    setTimeout(() => {
+        window.scrollTo({ top: 300, behavior: 'smooth' });
+    }, 100);
 }
 
 const dynamicsColors = ['#03b6fa','#09aafa','#0f9ef9','#1493f9','#1a87f9','#207bf8','#266ff8','#2c63f8','#3158f7','#374cf7',
@@ -188,5 +197,19 @@ const dynamicsColors = ['#03b6fa','#09aafa','#0f9ef9','#1493f9','#1a87f9','#207b
                 </div>
             </li>
         </ul>
+
+        <div class="flex bg-white shadow-xl rounded-xl items-center justify-center mt-5 py-2 px-5 space-x-2">
+            <button type="button" :disabled="currentPage === 0" @click="requestVersions(currentPage - 1)" class="flex items-center justify-center h-8 w-12 bg-white rounded-lg border-1 border-[#5D00F5]" :class="[ currentPage === 0 ? 'opacity-60' : '' ]">
+                <img :src="arrowicon" alt="lest arrow" class="w-5 h-7 rotate-270"/>
+            </button>
+            <div class="text-[#5D00F5] text-xl">
+                <span>{{ currentPage + 1 }}</span>
+                de
+                <span>{{ totalPages }}</span>
+            </div>
+            <button type="button" :disabled="currentPage === totalPages - 1" @click="requestVersions(currentPage + 1)" class="flex items-center justify-center h-8 w-12 bg-white rounded-lg border-1 border-[#5D00F5]" :class="[ currentPage === totalPages - 1 ? 'opacity-60' : '' ]">
+                <img :src="arrowicon" alt="right arrow" class="w-5 h-7 rotate-90"/>
+            </button>
+        </div>
     </div>
 </template>
