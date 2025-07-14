@@ -12,6 +12,11 @@ function showOption(optionId) {
         return;
     }
     byThemeOn.value = !byThemeOn.value;
+    if (byThemeOn.value) {
+        searchInput.value = lastSearchByThemeAndDynamics.value;
+    } else {
+        searchInput.value = lastSearchByTitle.value;
+    }
 }
 
 const dynamicTrackOn = ref(false);
@@ -23,7 +28,7 @@ const searchInputPlaceHolder = computed(() => {
 });
 const searchInput = ref("");
 const isSearchInputFull = computed(() => {
-    knobPosition.value = 15
+    knobPosition.value = lastKnobPosition.value
     return searchInput.value != "";
 });
 
@@ -71,14 +76,19 @@ const isRequestButtonDisabled = computed(() => {
     return searchInput.value === "" && !dynamicTrackOn.value;
 });
 
-const lastSearch = ref("");
-const lastKnobPosition = ref(null);
+const lastSearchByThemeAndDynamics = ref("");
+const lastSearchByTitle = ref("");
+const lastKnobPosition = ref(15);
 
 function newSearch(pageNumber) {
-    lastSearch.value = searchInput.value;
-    lastKnobPosition.value = knobPosition.value;
+    if (byThemeOn.value) {
+        lastSearchByThemeAndDynamics.value = searchInput.value;
+        lastKnobPosition.value = knobPosition.value;
 
-    requestVersions(pageNumber);
+        requestVersionsByThemeAndDynamics(pageNumber);
+    } else {
+        lastSearchByTitle.value = searchInput.value
+    }
 }
 
 const backendURL = import.meta.env.VITE_BACKEND_URL;
@@ -89,15 +99,15 @@ const isVersionsListVisible = computed(() => {
     return versions.values.length > 0;
 });
 
-function requestVersions(pageNumber) {
+function requestVersionsByThemeAndDynamics(pageNumber) {
     let fullURL;
     currentPage.value = pageNumber;
 
-    if (lastSearch.value !== "") {
+    if (lastSearchByThemeAndDynamics.value !== "") {
         if (dynamicTrackOn.value) {
-            fullURL = `${backendURL}/api/song?theme=${lastSearch.value}&songDynamics=${lastKnobPosition.value}&pageNumber=${pageNumber}`;
+            fullURL = `${backendURL}/api/song?theme=${lastSearchByThemeAndDynamics.value}&songDynamics=${lastKnobPosition.value}&pageNumber=${pageNumber}`;
         } else {
-            fullURL = `${backendURL}/api/song?theme=${lastSearch.value}&pageNumber=${pageNumber}`;
+            fullURL = `${backendURL}/api/song?theme=${lastSearchByThemeAndDynamics.value}&pageNumber=${pageNumber}`;
         }
     } else {
         if (dynamicTrackOn.value) {
@@ -116,7 +126,9 @@ function requestVersions(pageNumber) {
             console.log(error);
         });
 
-    searchInput.value = lastSearch.value;
+    if (byThemeOn.value) {
+        searchInput.value = lastSearchByThemeAndDynamics.value;
+    }
     knobPosition.value = lastKnobPosition.value;
 
     setTimeout(() => {
@@ -199,7 +211,7 @@ const dynamicsColors = ['#03b6fa','#09aafa','#0f9ef9','#1493f9','#1a87f9','#207b
         </ul>
 
         <div class="flex bg-white shadow-xl rounded-xl items-center justify-center mt-5 py-2 px-5 space-x-2">
-            <button type="button" :disabled="currentPage === 0" @click="requestVersions(currentPage - 1)" class="flex items-center justify-center h-8 w-12 bg-white rounded-lg border-1 border-[#5D00F5]" :class="[ currentPage === 0 ? 'opacity-60' : '' ]">
+            <button type="button" :disabled="currentPage === 0" @click="requestVersionsByThemeAndDynamics(currentPage - 1)" class="flex items-center justify-center h-8 w-12 bg-white rounded-lg border-1 border-[#5D00F5]" :class="[ currentPage === 0 ? 'opacity-60' : '' ]">
                 <img :src="arrowicon" alt="lest arrow" class="w-5 h-7 rotate-270"/>
             </button>
             <div class="text-[#5D00F5] text-xl">
@@ -207,7 +219,7 @@ const dynamicsColors = ['#03b6fa','#09aafa','#0f9ef9','#1493f9','#1a87f9','#207b
                 de
                 <span>{{ totalPages }}</span>
             </div>
-            <button type="button" :disabled="currentPage === totalPages - 1" @click="requestVersions(currentPage + 1)" class="flex items-center justify-center h-8 w-12 bg-white rounded-lg border-1 border-[#5D00F5]" :class="[ currentPage === totalPages - 1 ? 'opacity-60' : '' ]">
+            <button type="button" :disabled="currentPage === totalPages - 1" @click="requestVersionsByThemeAndDynamics(currentPage + 1)" class="flex items-center justify-center h-8 w-12 bg-white rounded-lg border-1 border-[#5D00F5]" :class="[ currentPage === totalPages - 1 ? 'opacity-60' : '' ]">
                 <img :src="arrowicon" alt="right arrow" class="w-5 h-7 rotate-90"/>
             </button>
         </div>
