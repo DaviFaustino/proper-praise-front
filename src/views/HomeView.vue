@@ -82,13 +82,15 @@ const lastKnobPosition = ref(15);
 
 function newSearch(pageNumber, isPageNavigation) {
     if (byThemeOn.value) {
-        lastSearchByThemeAndDynamics.value = searchInput.value;
-        lastKnobPosition.value = knobPosition.value;
-
+        if (!isPageNavigation) {
+            lastSearchByThemeAndDynamics.value = searchInput.value;
+            lastKnobPosition.value = knobPosition.value;
+        }
         requestVersionsByThemeAndDynamics(pageNumber);
     } else {
-        lastSearchByTitle.value = searchInput.value
-
+        if (!isPageNavigation) {
+            lastSearchByTitle.value = searchInput.value
+        }
         requestVersionsByTitle(pageNumber);
     }
 }
@@ -187,7 +189,7 @@ const dynamicsColors = ['#03b6fa','#09aafa','#0f9ef9','#1493f9','#1a87f9','#207b
             </div>
 
             <div :class="[ dynamicTrackOn || !byThemeOn ? 'h-8': 'h-4']"></div>
-            <button type="button" :disabled="isRequestButtonDisabled" @click="newSearch(0)" class="flex items-center border-1 border-[#5D00F5] rounded-lg py-1 px-2 space-x-2" :class="[ isRequestButtonDisabled ? 'opacity-60' : '' ]">
+            <button type="button" :disabled="isRequestButtonDisabled" @click="newSearch(0, false)" class="flex items-center border-1 border-[#5D00F5] rounded-lg py-1 px-2 space-x-2" :class="[ isRequestButtonDisabled ? 'opacity-60' : '' ]">
                 <img :src="mglassicon" alt="glass" class="size-5" draggable="false">
                 <div class="text-lg text-[#5D00F5]">Buscar</div>
             </button>
@@ -235,7 +237,7 @@ const dynamicsColors = ['#03b6fa','#09aafa','#0f9ef9','#1493f9','#1a87f9','#207b
         </ul>
 
         <div class="flex bg-white shadow-xl rounded-xl items-center justify-center mt-5 py-2 px-5 space-x-2">
-            <button type="button" :disabled="currentPage === 0" @click="newSearch(currentPage - 1)" class="flex items-center justify-center h-8 w-12 bg-white rounded-lg border-1 border-[#5D00F5]" :class="[ currentPage === 0 ? 'opacity-60' : '' ]">
+            <button type="button" :disabled="currentPage === 0" @click="newSearch(currentPage - 1, true)" class="flex items-center justify-center h-8 w-12 bg-white rounded-lg border-1 border-[#5D00F5]" :class="[ currentPage === 0 ? 'opacity-60' : '' ]">
                 <img :src="arrowicon" alt="lest arrow" class="w-5 h-7 rotate-270"/>
             </button>
             <div class="text-[#5D00F5] text-xl">
@@ -243,7 +245,7 @@ const dynamicsColors = ['#03b6fa','#09aafa','#0f9ef9','#1493f9','#1a87f9','#207b
                 de
                 <span>{{ totalPages }}</span>
             </div>
-            <button type="button" :disabled="currentPage === totalPages - 1" @click="newSearch(currentPage + 1)" class="flex items-center justify-center h-8 w-12 bg-white rounded-lg border-1 border-[#5D00F5]" :class="[ currentPage === totalPages - 1 ? 'opacity-60' : '' ]">
+            <button type="button" :disabled="currentPage === totalPages - 1" @click="newSearch(currentPage + 1, true)" class="flex items-center justify-center h-8 w-12 bg-white rounded-lg border-1 border-[#5D00F5]" :class="[ currentPage === totalPages - 1 ? 'opacity-60' : '' ]">
                 <img :src="arrowicon" alt="right arrow" class="w-5 h-7 rotate-90"/>
             </button>
         </div>
