@@ -80,7 +80,7 @@ const lastSearchByThemeAndDynamics = ref("");
 const lastSearchByTitle = ref("");
 const lastKnobPosition = ref(15);
 
-function newSearch(pageNumber) {
+function newSearch(pageNumber, isPageNavigation) {
     if (byThemeOn.value) {
         lastSearchByThemeAndDynamics.value = searchInput.value;
         lastKnobPosition.value = knobPosition.value;
@@ -88,6 +88,8 @@ function newSearch(pageNumber) {
         requestVersionsByThemeAndDynamics(pageNumber);
     } else {
         lastSearchByTitle.value = searchInput.value
+
+        requestVersionsByTitle(pageNumber);
     }
 }
 
@@ -130,6 +132,28 @@ function requestVersionsByThemeAndDynamics(pageNumber) {
         searchInput.value = lastSearchByThemeAndDynamics.value;
     }
     knobPosition.value = lastKnobPosition.value;
+
+    setTimeout(() => {
+        window.scrollTo({ top: 300, behavior: 'smooth' });
+    }, 100);
+}
+
+function requestVersionsByTitle(pageNumber) {
+    let fullURL = `${backendURL}/api/song/t?searchTerm=${lastSearchByTitle.value}&pageNumber=${pageNumber}`;
+    currentPage.value = pageNumber;
+
+    axios.get(fullURL)
+        .then(response => {
+            versions.values = response.data.versions;
+            totalPages.value = response.data.totalPages;
+        })
+        .catch(error => {
+            console.log(error);
+        });
+
+    if (!byThemeOn.value) {
+        searchInput.value = lastSearchByTitle.value;
+    }
 
     setTimeout(() => {
         window.scrollTo({ top: 300, behavior: 'smooth' });
@@ -211,7 +235,7 @@ const dynamicsColors = ['#03b6fa','#09aafa','#0f9ef9','#1493f9','#1a87f9','#207b
         </ul>
 
         <div class="flex bg-white shadow-xl rounded-xl items-center justify-center mt-5 py-2 px-5 space-x-2">
-            <button type="button" :disabled="currentPage === 0" @click="requestVersionsByThemeAndDynamics(currentPage - 1)" class="flex items-center justify-center h-8 w-12 bg-white rounded-lg border-1 border-[#5D00F5]" :class="[ currentPage === 0 ? 'opacity-60' : '' ]">
+            <button type="button" :disabled="currentPage === 0" @click="newSearch(currentPage - 1)" class="flex items-center justify-center h-8 w-12 bg-white rounded-lg border-1 border-[#5D00F5]" :class="[ currentPage === 0 ? 'opacity-60' : '' ]">
                 <img :src="arrowicon" alt="lest arrow" class="w-5 h-7 rotate-270"/>
             </button>
             <div class="text-[#5D00F5] text-xl">
@@ -219,7 +243,7 @@ const dynamicsColors = ['#03b6fa','#09aafa','#0f9ef9','#1493f9','#1a87f9','#207b
                 de
                 <span>{{ totalPages }}</span>
             </div>
-            <button type="button" :disabled="currentPage === totalPages - 1" @click="requestVersionsByThemeAndDynamics(currentPage + 1)" class="flex items-center justify-center h-8 w-12 bg-white rounded-lg border-1 border-[#5D00F5]" :class="[ currentPage === totalPages - 1 ? 'opacity-60' : '' ]">
+            <button type="button" :disabled="currentPage === totalPages - 1" @click="newSearch(currentPage + 1)" class="flex items-center justify-center h-8 w-12 bg-white rounded-lg border-1 border-[#5D00F5]" :class="[ currentPage === totalPages - 1 ? 'opacity-60' : '' ]">
                 <img :src="arrowicon" alt="right arrow" class="w-5 h-7 rotate-90"/>
             </button>
         </div>
