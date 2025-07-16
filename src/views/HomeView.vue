@@ -28,8 +28,13 @@ const searchInputPlaceHolder = computed(() => {
 });
 const searchInput = ref("");
 const isSearchInputFull = computed(() => {
-    knobPosition.value = lastKnobPosition.value
-    return searchInput.value != "";
+    let result = searchInput.value != "";
+    if (result) {
+        if (knobPosition.value > 28) {
+            knobPosition.value = 28;
+        }
+    }
+    return result;
 });
 
 function onInputChange(event) {
