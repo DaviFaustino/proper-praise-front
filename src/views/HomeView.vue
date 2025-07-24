@@ -67,10 +67,25 @@ function requestThemesNames(firstThreeLetters) {
         .then(response => {
             lastThemesNamesSearch.value = firstThreeLetters;
             themesNames.value = response.data;
+            sortThemesNames(firstThreeLetters);
         })
         .catch(error => {
             console.error(error);
         });
+}
+
+function sortThemesNames(firstThreeLetters) {
+    themesNames.value.sort();
+    let totalThemesWithFirstThreeLetters = 0;
+
+    for (let i = themesNames.value.length - 1; i >= 0; i--) {
+        if (themesNames.value[i + totalThemesWithFirstThreeLetters].substring(0, 3).toLowerCase() === firstThreeLetters.toLowerCase()) {
+            let theme = themesNames.value.splice(i + totalThemesWithFirstThreeLetters, 1);
+            themesNames.value = theme.concat(themesNames.value);
+
+            totalThemesWithFirstThreeLetters++;
+        }
+    }
 }
 
 const filteredThemeSuggestions = computed(() => {
