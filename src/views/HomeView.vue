@@ -130,19 +130,42 @@ const lastSearchByThemeAndDynamics = ref("");
 const lastSearchByTitle = ref("");
 const lastKnobPosition = ref(15);
 
-function newSearch(pageNumber, isPageNavigation) {
+async function newSearch(pageNumber, isPageNavigation) {
     if (byThemeOn.value) {
         if (!isPageNavigation) {
             lastSearchByThemeAndDynamics.value = searchInput.value;
             lastKnobPosition.value = knobPosition.value;
         }
-        requestVersionsByThemeAndDynamics(pageNumber);
+
+        let themeExists = false;
+        if (!dynamicTrackOn.value || (dynamicTrackOn.value && searchInput.value.length > 1)) {
+            themeExists = checkIfSearchedThemeExists();
+
+            if (!themesNames.value.includes(searchInput.value)) {
+                await requestThemesNames(searchInput.value);
+                themeExists = checkIfSearchedThemeExists();
+            }
+        }
+        if (themeExists || (dynamicTrackOn.value && searchInput.value.length === 0)) {
+            requestVersionsByThemeAndDynamics(pageNumber);
+        }
     } else {
         if (!isPageNavigation) {
             lastSearchByTitle.value = searchInput.value
         }
         requestVersionsByTitle(pageNumber);
     }
+}
+
+function checkIfSearchedThemeExists() {
+    for (let i = 0; i < themesNames.value.length; i++) {
+        if (themesNames.value.at(i).toLowerCase() === searchInput.value.toLowerCase()) {
+            searchInput.value = themesNames.value.at(i);
+            lastSearchByThemeAndDynamics.value = searchInput.value;
+            return true;
+        }
+    }
+    return false;
 }
 
 const backendURL = import.meta.env.VITE_BACKEND_URL;
