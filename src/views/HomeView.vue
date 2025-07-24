@@ -38,6 +38,10 @@ const isSearchInputFull = computed(() => {
 });
 
 const lastThemesNamesSearch = ref('');
+const inputFocused = ref(false);
+const showThemeSuggestions = computed(() => {
+    return (searchInput.value.length > 2 && inputFocused.value)
+});
 
 function onInputChange(event) {
     if (event.target.value[0] === " ") {
@@ -79,6 +83,10 @@ const filteredThemeSuggestions = computed(() => {
     }
     return filtered;
 });
+
+function handleInputBlur() {
+    setTimeout(() => {inputFocused.value = false}, 250);
+}
 
 function positionKnob(event) {
     const trackRect = document.querySelector('#track').getBoundingClientRect();
@@ -218,9 +226,9 @@ const dynamicsColors = ['#03b6fa','#09aafa','#0f9ef9','#1493f9','#1a87f9','#207b
 
         <div class="flex flex-col items-center mt-10">
             <div class="relative">
-                <input type="text" :placeholder="searchInputPlaceHolder" v-model="searchInput" class="border-2 border-[#5D00F5] rounded-lg p-2 w-[20rem] sm:w-96" @input="onInputChange">
+                <input type="text" :placeholder="searchInputPlaceHolder" v-model="searchInput" class="border-2 border-[#5D00F5] rounded-lg p-2 w-[20rem] sm:w-96" @input="onInputChange" @focus="inputFocused = true" @blur="handleInputBlur">
 
-                <div class="absolute top-full left-0 w-fit max-h-44 overflow-y-auto mt-0.5 rounded-lg bg-[#5D00F5] bg-opacity-80 text-white z-10">
+                <div v-if="showThemeSuggestions" class="absolute top-full left-0 w-fit max-h-44 overflow-y-auto mt-0.5 rounded-lg bg-[#5D00F5] bg-opacity-80 text-white z-10">
                     <ul class="mt-1">
                         <li v-for="ts in filteredThemeSuggestions" :key="ts" :id="ts" class="hover:bg-white px-2 pr-5">
                             <button type="button" @click="searchInput = ts" class="w-full hover:text-[#5D00F5] text-left">{{ ts }}</button>
