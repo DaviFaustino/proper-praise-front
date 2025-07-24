@@ -37,11 +37,48 @@ const isSearchInputFull = computed(() => {
     return result;
 });
 
+const lastThemesNamesSearch = ref('');
+
 function onInputChange(event) {
     if (event.target.value[0] === " ") {
         searchInput.value = "";
     };
+
+    // compare with first 3 letters
+    if (searchInput.value.length > 2) {
+        let firstThreeLetters = searchInput.value.substring(0, 3);
+
+        if (firstThreeLetters.toLowerCase() !== lastThemesNamesSearch.value.toLowerCase()) {
+            requestThemesNames(firstThreeLetters);
+        }
+    }
 }
+
+const themesNames = ref([]);
+
+function requestThemesNames(firstThreeLetters) {
+    const fullURL = `${backendURL}/api/song/themes?searchTerm=${firstThreeLetters}`;
+
+    return axios.get(fullURL)
+        .then(response => {
+            lastThemesNamesSearch.value = firstThreeLetters;
+            themesNames.value = response.data;
+        })
+        .catch(error => {
+            console.error(error);
+        });
+}
+
+const filteredThemeSuggestions = computed(() => {
+    let filtered = [];
+
+    for (let i = 0; i < themesNames.value.length; i++) {
+        if (themesNames.value.at(i).toLowerCase().includes(searchInput.value.toLowerCase())) {
+            filtered.push(themesNames.value.at(i));
+        }
+    }
+    return filtered;
+});
 
 function positionKnob(event) {
     const trackRect = document.querySelector('#track').getBoundingClientRect();
@@ -78,7 +115,7 @@ function startDragging(event) {
 }
 
 const isRequestButtonDisabled = computed(() => {
-    return searchInput.value === "" && !dynamicTrackOn.value;
+    return (!dynamicTrackOn.value && searchInput.value.length < 2) || (dynamicTrackOn && searchInput.value.length === 1);
 });
 
 const lastSearchByThemeAndDynamics = ref("");
@@ -180,7 +217,17 @@ const dynamicsColors = ['#03b6fa','#09aafa','#0f9ef9','#1493f9','#1a87f9','#207b
         </div>
 
         <div class="flex flex-col items-center mt-10">
-            <input type="text" :placeholder="searchInputPlaceHolder" v-model="searchInput" class="border-2 border-[#5D00F5] rounded-lg p-2 w-[20rem] sm:w-96" @input="onInputChange">
+            <div class="relative">
+                <input type="text" :placeholder="searchInputPlaceHolder" v-model="searchInput" class="border-2 border-[#5D00F5] rounded-lg p-2 w-[20rem] sm:w-96" @input="onInputChange">
+
+                <div class="absolute top-full left-0 w-fit max-h-44 overflow-y-auto mt-0.5 rounded-lg bg-[#5D00F5] bg-opacity-80 text-white z-10">
+                    <ul class="mt-1">
+                        <li v-for="ts in filteredThemeSuggestions" :key="ts" :id="ts" class="hover:bg-white px-2 pr-5">
+                            <button type="button" @click="searchInput = ts" class="w-full hover:text-[#5D00F5] text-left">{{ ts }}</button>
+                        </li>
+                    </ul>
+                </div>
+            </div>
 
             <div v-if="byThemeOn" class=" w-[20rem] sm:w-96">
                 <button class="flex items-center space-x-2 mb-1 text-lg" @click="dynamicTrackOn = !dynamicTrackOn">
