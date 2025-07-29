@@ -40,7 +40,7 @@ const isSearchInputFull = computed(() => {
 const lastThemesNamesSearch = ref('');
 const inputFocused = ref(false);
 const showThemeSuggestions = computed(() => {
-    return (searchInput.value.length > 2 && inputFocused.value)
+    return (byThemeOn.value && searchInput.value.length > 2 && inputFocused.value)
 });
 
 function onInputChange(event) {
@@ -49,7 +49,7 @@ function onInputChange(event) {
     };
 
     // compare with first 3 letters
-    if (searchInput.value.length > 2) {
+    if (byThemeOn.value && searchInput.value.length > 2) {
         let firstThreeLetters = searchInput.value.substring(0, 3);
 
         if (firstThreeLetters.toLowerCase() !== lastThemesNamesSearch.value.toLowerCase()) {
