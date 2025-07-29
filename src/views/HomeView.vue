@@ -141,34 +141,42 @@ const isRequestButtonDisabled = computed(() => {
     return (!dynamicTrackOn.value && searchInput.value.length < 2) || (dynamicTrackOn && searchInput.value.length === 1);
 });
 
+const lastSearchWasByTitle = ref(false);
 const lastSearchByThemeAndDynamics = ref("");
 const lastSearchByTitle = ref("");
 const lastKnobPosition = ref(15);
 
 async function newSearch(pageNumber, isPageNavigation) {
-    if (byThemeOn.value) {
-        if (!isPageNavigation) {
+    if (!isPageNavigation) {
+        if (byThemeOn.value) {
             lastSearchByThemeAndDynamics.value = searchInput.value;
             lastKnobPosition.value = knobPosition.value;
-        }
 
-        let themeExists = false;
-        if (!dynamicTrackOn.value || (dynamicTrackOn.value && searchInput.value.length > 1)) {
-            themeExists = checkIfSearchedThemeExists();
-
-            if (!themesNames.value.includes(searchInput.value)) {
-                await requestThemesNames(searchInput.value);
+            let themeExists = false;
+            if (!dynamicTrackOn.value || (dynamicTrackOn.value && searchInput.value.length > 1)) {
                 themeExists = checkIfSearchedThemeExists();
+
+                if (!themesNames.value.includes(searchInput.value)) {
+                    await requestThemesNames(searchInput.value);
+                    themeExists = checkIfSearchedThemeExists();
+                }
             }
-        }
-        if (themeExists || (dynamicTrackOn.value && searchInput.value.length === 0)) {
-            requestVersionsByThemeAndDynamics(pageNumber);
+
+            if (themeExists || (dynamicTrackOn.value && searchInput.value.length === 0)) {
+                requestVersionsByThemeAndDynamics(pageNumber);
+            }
+            lastSearchWasByTitle.value = false;
+        } else {
+            lastSearchByTitle.value = searchInput.value;
+            requestVersionsByTitle(pageNumber);
+            lastSearchWasByTitle.value = true;
         }
     } else {
-        if (!isPageNavigation) {
-            lastSearchByTitle.value = searchInput.value
+        if (lastSearchWasByTitle.value) {
+            requestVersionsByTitle(pageNumber);
+        } else {
+            requestVersionsByThemeAndDynamics(pageNumber);
         }
-        requestVersionsByTitle(pageNumber);
     }
 }
 
