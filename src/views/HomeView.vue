@@ -144,13 +144,17 @@ const isRequestButtonDisabled = computed(() => {
 const lastSearchWasByTitle = ref(false);
 const lastSearchByThemeAndDynamics = ref("");
 const lastSearchByTitle = ref("");
-const lastKnobPosition = ref(15);
+const lastKnobPosition = ref(null);
 
 async function newSearch(pageNumber, isPageNavigation) {
     if (!isPageNavigation) {
         if (byThemeOn.value) {
             lastSearchByThemeAndDynamics.value = searchInput.value;
-            lastKnobPosition.value = knobPosition.value;
+            if (dynamicTrackOn.value) {
+                lastKnobPosition.value = knobPosition.value;
+            } else {
+                lastKnobPosition.value = null;
+            }
 
             let themeExists = false;
             if (!dynamicTrackOn.value || (dynamicTrackOn.value && searchInput.value.length > 1)) {
@@ -213,13 +217,13 @@ function requestVersionsByThemeAndDynamics(pageNumber) {
     currentPage.value = pageNumber;
 
     if (lastSearchByThemeAndDynamics.value !== "") {
-        if (dynamicTrackOn.value) {
+        if (lastKnobPosition.value != null) {
             fullURL = `${backendURL}/api/song?theme=${lastSearchByThemeAndDynamics.value}&songDynamics=${lastKnobPosition.value}&pageNumber=${pageNumber}`;
         } else {
             fullURL = `${backendURL}/api/song?theme=${lastSearchByThemeAndDynamics.value}&pageNumber=${pageNumber}`;
         }
     } else {
-        if (dynamicTrackOn.value) {
+        if (lastKnobPosition.value != null) {
             fullURL = `${backendURL}/api/song?songDynamics=${lastKnobPosition.value}&pageNumber=${pageNumber}`;
         } else {
             alert('Informe ao menos um parâmetro de busca.');
@@ -234,7 +238,12 @@ function requestVersionsByThemeAndDynamics(pageNumber) {
             if (byThemeOn.value) {
                 searchInput.value = lastSearchByThemeAndDynamics.value;
             }
-            knobPosition.value = lastKnobPosition.value;
+            if (lastKnobPosition.value != null) {
+                knobPosition.value = lastKnobPosition.value;
+                dynamicTrackOn.value = true;
+            } else {
+                dynamicTrackOn.value = false;
+            }
 
             setTimeout(() => {
                 window.scrollTo({ top: 300, behavior: 'smooth' });
