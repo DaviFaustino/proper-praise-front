@@ -163,12 +163,14 @@ async function newSearch(pageNumber, isPageNavigation) {
             }
 
             if (themeExists || (dynamicTrackOn.value && searchInput.value.length === 0)) {
-                requestVersionsByThemeAndDynamics(pageNumber);
+                await requestVersionsByThemeAndDynamics(pageNumber);
+            } else {
+                versions.values = [];
             }
             lastSearchWasByTitle.value = false;
         } else {
             lastSearchByTitle.value = searchInput.value;
-            requestVersionsByTitle(pageNumber);
+            await requestVersionsByTitle(pageNumber);
             lastSearchWasByTitle.value = true;
         }
     } else {
@@ -177,6 +179,12 @@ async function newSearch(pageNumber, isPageNavigation) {
         } else {
             requestVersionsByThemeAndDynamics(pageNumber);
         }
+    }
+
+    if (versions.values.length === 0) {
+        zeroResultsFound.value = true;
+    } else {
+        zeroResultsFound.value = false;
     }
 }
 
@@ -198,6 +206,7 @@ const currentPage = ref(1);
 const isVersionsListVisible = computed(() => {
     return versions.values.length > 0;
 });
+const zeroResultsFound = ref(false);
 
 function requestVersionsByThemeAndDynamics(pageNumber) {
     let fullURL;
@@ -217,45 +226,45 @@ function requestVersionsByThemeAndDynamics(pageNumber) {
         }
     }
 
-    axios.get(fullURL)
+    return axios.get(fullURL)
         .then(response => {
             versions.values = response.data.versions;
             totalPages.value = response.data.totalPages;
+
+            if (byThemeOn.value) {
+                searchInput.value = lastSearchByThemeAndDynamics.value;
+            }
+            knobPosition.value = lastKnobPosition.value;
+
+            setTimeout(() => {
+                window.scrollTo({ top: 300, behavior: 'smooth' });
+            }, 100);
         })
         .catch(error => {
             console.log(error);
         });
-
-    if (byThemeOn.value) {
-        searchInput.value = lastSearchByThemeAndDynamics.value;
-    }
-    knobPosition.value = lastKnobPosition.value;
-
-    setTimeout(() => {
-        window.scrollTo({ top: 300, behavior: 'smooth' });
-    }, 100);
 }
 
 function requestVersionsByTitle(pageNumber) {
     let fullURL = `${backendURL}/api/song/t?searchTerm=${lastSearchByTitle.value}&pageNumber=${pageNumber}`;
     currentPage.value = pageNumber;
 
-    axios.get(fullURL)
+    return axios.get(fullURL)
         .then(response => {
             versions.values = response.data.versions;
             totalPages.value = response.data.totalPages;
+
+            if (!byThemeOn.value) {
+                searchInput.value = lastSearchByTitle.value;
+            }
+
+            setTimeout(() => {
+                window.scrollTo({ top: 300, behavior: 'smooth' });
+            }, 100);
         })
         .catch(error => {
             console.log(error);
         });
-
-    if (!byThemeOn.value) {
-        searchInput.value = lastSearchByTitle.value;
-    }
-
-    setTimeout(() => {
-        window.scrollTo({ top: 300, behavior: 'smooth' });
-    }, 100);
 }
 
 const dynamicsColors = ['#03b6fa','#09aafa','#0f9ef9','#1493f9','#1a87f9','#207bf8','#266ff8','#2c63f8','#3158f7','#374cf7',
@@ -300,6 +309,10 @@ const dynamicsColors = ['#03b6fa','#09aafa','#0f9ef9','#1493f9','#1a87f9','#207b
                 <div class="text-lg text-[#5D00F5]">Buscar</div>
             </button>
         </div>
+    </div>
+
+    <div v-if="zeroResultsFound" class="flex flex-col items-center py-3 px-5 my-5 rounded-2xl bg-white shadow-xl text-xl text-[#5D00F5]">
+        <span>0 resultados encontrados</span>
     </div>
 
     <div v-if="isVersionsListVisible" class="flex flex-col items-center w-fit mt-5 mb-10 rounded-2xl">
