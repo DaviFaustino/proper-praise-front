@@ -4,6 +4,7 @@ import { computed, reactive, ref } from 'vue';
 import SearchTypeButton from '../components/SearchTypeButton.vue';
 import arrowicon from '/src/assets/arrow.svg';
 import mglassicon from '/src/assets/ma-glass-icon.svg';
+import logo from '/src/assets/logo.svg'
 
 const byThemeOn = ref(true);
 
@@ -282,6 +283,12 @@ const dynamicsColors = ['#03b6fa','#09aafa','#0f9ef9','#1493f9','#1a87f9','#207b
 </script>
 
 <template>
+    <div class="flex flex-col justify-center items-center space-y-5">
+        <div class=" bg-white py-5 px-10 mt-10 rounded-xl shadow">
+            <img :src="logo" alt="Logo" class="w-72 sm:w-96 h-auto"/>
+        </div>
+    </div>
+
     <div class="flex flex-col items-center w-fit mt-20 py-10 px-5 sm:px-10 md:px-20 rounded-2xl bg-white shadow-2xl">
         <div class="flex items-center border-1 border-[#5D00F5] bg-white rounded-xl p-1">
             <SearchTypeButton @selected="showOption" buttonText="por tema" optionId="by-theme" class="h-7 w-32 sm:w-40 rounded-lg" :class="[ byThemeOn ? 'bg-[#5D00F5] text-white' : 'bg-white text-[#5D00F5]' ]"/>
