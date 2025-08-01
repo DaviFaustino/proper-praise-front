@@ -287,9 +287,11 @@ const dynamicsColors = ['#03b6fa','#09aafa','#0f9ef9','#1493f9','#1a87f9','#207b
         <div class=" bg-white py-5 px-10 mt-10 rounded-xl shadow">
             <img :src="logo" alt="Logo" class="w-72 sm:w-96 h-auto"/>
         </div>
+
+        <p class="text-md sm:text-lg w-[15rem] sm:w-auto text-center text-[#5D00F5] bg-white px-2 rounded-lg shadow">Um lugar para buscar o louvor ideal para a ocasião.</p>
     </div>
 
-    <div class="flex flex-col items-center w-fit mt-20 py-10 px-5 sm:px-10 md:px-20 rounded-2xl bg-white shadow-2xl">
+    <div class="flex flex-col items-center w-fit mt-15 py-10 px-9 sm:px-10 md:px-20 rounded-2xl bg-white shadow-2xl">
         <div class="flex items-center border-1 border-[#5D00F5] bg-white rounded-xl p-1">
             <SearchTypeButton @selected="showOption" buttonText="por tema" optionId="by-theme" class="h-7 w-32 sm:w-40 rounded-lg" :class="[ byThemeOn ? 'bg-[#5D00F5] text-white' : 'bg-white text-[#5D00F5]' ]"/>
             <SearchTypeButton @selected="showOption" buttonText="por título" optionId="by-title" class="h-7 w-32 sm:w-40 rounded-lg" :class="[ byThemeOn ? 'bg-white text-[#5D00F5]' : 'bg-[#5D00F5] text-white' ]"/>
