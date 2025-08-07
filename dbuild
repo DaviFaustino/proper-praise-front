@@ -1,3 +1,7 @@
-!/bin/bash
+#!/bin/bash
 export $(grep -v '^#' .env | xargs)
-docker build -t $IMAGE_NAME:$PROJECT_VERSION .
+if [ $1 == p ]; then
+    docker build -t davifaustino/$IMAGE_NAME:$PROJECT_VERSION --no-cache .
+else
+    docker build --build-arg ENV_FILE=.env.development -t davifaustino/$IMAGE_NAME:$PROJECT_VERSION-dev --no-cache .
+fi
