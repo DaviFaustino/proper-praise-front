@@ -7,7 +7,7 @@
         <span class="text-white font-bold text-xl mb-2">KDLouvor</span>
         <span class="text-white text-sm">
             <RouterLink class="font-bold hover:underline" to="/terms-of-use">Termos de Uso</RouterLink> |
-            <RouterLink class="font-bold hover:underline" to="/terms-of-use">Política de Privacidade</RouterLink>
+            <RouterLink class="font-bold hover:underline" to="/privacy-policy">Política de Privacidade</RouterLink>
         </span>
     </footer>
 </template>
