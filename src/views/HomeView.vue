@@ -297,7 +297,7 @@ onMounted(() => {
 <template>
     <div class="flex flex-col justify-center items-center space-y-5">
         <div class=" bg-white py-5 px-10 mt-10 rounded-xl shadow">
-            <img :src="logo" alt="Logo" class="w-72 sm:w-96 h-auto"/>
+            <img :src="logo" alt="Logo" class="w-72 sm:w-96 h-auto pointer-events-none"/>
         </div>
 
         <p class="text-md sm:text-lg w-[15rem] sm:w-auto text-center text-[#5D00F5] bg-white px-2 rounded-lg shadow">Um lugar para buscar o louvor ideal para a ocasião.</p>
