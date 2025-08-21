@@ -149,6 +149,7 @@ const lastKnobPosition = ref(null);
 const isLoading = ref(false);
 
 async function newSearch(pageNumber, isPageNavigation) {
+    window.scrollTo({ top: 300, behavior: 'smooth' });
     isLoading.value = true;
 
     if (!isPageNavigation) {
@@ -250,10 +251,6 @@ function requestVersionsByThemeAndDynamics(pageNumber) {
             } else {
                 dynamicTrackOn.value = false;
             }
-
-            setTimeout(() => {
-                window.scrollTo({ top: 300, behavior: 'smooth' });
-            }, 100);
         })
         .catch(error => {
             console.log(error);
@@ -272,10 +269,6 @@ function requestVersionsByTitle(pageNumber) {
             if (!byThemeOn.value) {
                 searchInput.value = lastSearchByTitle.value;
             }
-
-            setTimeout(() => {
-                window.scrollTo({ top: 300, behavior: 'smooth' });
-            }, 100);
         })
         .catch(error => {
             console.log(error);
