@@ -24,7 +24,7 @@ function setBackgroundImage(value) {
             <RouterView @gotten-side-margin="setBackgroundImage" />
         </main>
     
-        <footer class="relative flex flex-col h-20 mt-10 bg-[#5D00F5] justify-center items-center">
+        <footer class="relative flex flex-col h-20 bg-[#5D00F5] justify-center items-center">
             <span class="text-white font-bold text-xl mb-2">KDLouvor</span>
             <span class="text-white text-sm">
                 <RouterLink class="font-bold hover:underline" to="/terms-of-use">Termos de Uso</RouterLink> |

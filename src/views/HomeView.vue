@@ -399,4 +399,6 @@ onMounted(() => {
             </button>
         </div>
     </div>
+
+    <div :class="[ isVersionsListVisible ? '': 'mb-10' ]"></div>
 </template>
