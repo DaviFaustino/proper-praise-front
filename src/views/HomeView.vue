@@ -146,8 +146,11 @@ const lastSearchWasByTitle = ref(false);
 const lastSearchByThemeAndDynamics = ref("");
 const lastSearchByTitle = ref("");
 const lastKnobPosition = ref(null);
+const isLoading = ref(false);
 
 async function newSearch(pageNumber, isPageNavigation) {
+    isLoading.value = true;
+
     if (!isPageNavigation) {
         if (byThemeOn.value) {
             lastSearchByThemeAndDynamics.value = searchInput.value;
@@ -180,11 +183,13 @@ async function newSearch(pageNumber, isPageNavigation) {
         }
     } else {
         if (lastSearchWasByTitle.value) {
-            requestVersionsByTitle(pageNumber);
+            await requestVersionsByTitle(pageNumber);
         } else {
-            requestVersionsByThemeAndDynamics(pageNumber);
+            await requestVersionsByThemeAndDynamics(pageNumber);
         }
     }
+
+    isLoading.value = false;
 
     if (versions.values.length === 0) {
         zeroResultsFound.value = true;
@@ -344,6 +349,8 @@ onMounted(() => {
     <div v-if="zeroResultsFound" class="flex flex-col items-center py-3 px-5 my-5 rounded-2xl bg-white shadow-xl text-xl text-[#5D00F5]">
         <span>0 resultados encontrados</span>
     </div>
+
+    <div id="loading" v-if="isLoading" class="mt-5 size-15 border-8 border-t-white border-b-[#5D00F5] border-r-[#5D00F5] border-l-[#5D00F5] rounded-full animate-spin"></div>
 
     <div v-if="isVersionsListVisible" class="flex flex-col items-center w-fit mt-5 mb-10 rounded-2xl">
         <ul class="flex flex-col">
