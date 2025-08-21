@@ -1,6 +1,6 @@
 <script setup>
 import axios from 'axios';
-import { onMounted, computed, reactive, ref, defineEmits } from 'vue';
+import { onMounted, computed, reactive, ref } from 'vue';
 import SearchTypeButton from '../components/SearchTypeButton.vue';
 import arrowicon from '/src/assets/arrow.svg';
 import mglassicon from '/src/assets/ma-glass-icon.svg';
