@@ -1,6 +1,6 @@
 <script setup>
 import axios from 'axios';
-import { computed, reactive, ref } from 'vue';
+import { onMounted, computed, reactive, ref, defineEmits } from 'vue';
 import SearchTypeButton from '../components/SearchTypeButton.vue';
 import arrowicon from '/src/assets/arrow.svg';
 import mglassicon from '/src/assets/ma-glass-icon.svg';
@@ -280,6 +280,18 @@ function requestVersionsByTitle(pageNumber) {
 const dynamicsColors = ['#03b6fa','#09aafa','#0f9ef9','#1493f9','#1a87f9','#207bf8','#266ff8','#2c63f8','#3158f7','#374cf7',
 '#3d40f7','#4334f6','#4929f6','#4f1df6','#5411f5','#5a06f5','#6200ed','#6b00de','#7500cf','#7e00c0','#8800b1','#9100a2',
 '#9b0093','#a40084','#ae0176','#b70167','#c10158','#ca0149','#d4013a','#dd012b','#e7011c','#f0010d']
+
+const emit = defineEmits(['gotten-side-margin'])
+
+function refreshSearchAreaSideMargin() {
+    const searchAreaTrackRect = document.querySelector('#search-area').getBoundingClientRect();
+    emit('gotten-side-margin', searchAreaTrackRect.left);
+}
+
+onMounted(() => {
+    window.addEventListener('resize', refreshSearchAreaSideMargin);
+    refreshSearchAreaSideMargin();
+})
 </script>
 
 <template>
@@ -291,7 +303,7 @@ const dynamicsColors = ['#03b6fa','#09aafa','#0f9ef9','#1493f9','#1a87f9','#207b
         <p class="text-md sm:text-lg w-[15rem] sm:w-auto text-center text-[#5D00F5] bg-white px-2 rounded-lg shadow">Um lugar para buscar o louvor ideal para a ocasião.</p>
     </div>
 
-    <div class="flex flex-col items-center w-fit mt-15 py-10 px-9 sm:px-10 md:px-20 rounded-2xl bg-white shadow-2xl">
+    <div id="search-area" class="flex flex-col items-center w-fit mt-15 py-10 px-9 sm:px-10 md:px-20 rounded-2xl bg-white shadow-2xl">
         <div class="flex items-center border-1 border-[#5D00F5] bg-white rounded-xl p-1">
             <SearchTypeButton @selected="showOption" buttonText="por tema" optionId="by-theme" class="h-7 w-32 sm:w-40 rounded-lg" :class="[ byThemeOn ? 'bg-[#5D00F5] text-white' : 'bg-white text-[#5D00F5]' ]"/>
             <SearchTypeButton @selected="showOption" buttonText="por título" optionId="by-title" class="h-7 w-32 sm:w-40 rounded-lg" :class="[ byThemeOn ? 'bg-white text-[#5D00F5]' : 'bg-[#5D00F5] text-white' ]"/>
