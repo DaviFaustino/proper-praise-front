@@ -184,8 +184,10 @@ async function newSearch(pageNumber, isPageNavigation) {
         }
     } else {
         if (lastSearchWasByTitle.value) {
+            byThemeOn.value = false;
             await requestVersionsByTitle(pageNumber);
         } else {
+            byThemeOn.value = true;
             await requestVersionsByThemeAndDynamics(pageNumber);
         }
     }
