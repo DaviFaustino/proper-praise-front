@@ -149,10 +149,7 @@ const lastKnobPosition = ref(null);
 const isLoading = ref(false);
 
 async function newSearch(pageNumber, isPageNavigation) {
-    // add dalay to avoid scroll error on last navigation page
-    setTimeout(() => {
-        window.scrollTo({ top: 300, behavior: 'smooth' });
-    }, 100);
+    window.scrollTo({ top: 300, behavior: 'smooth' });
 
     isLoading.value = true;
 
