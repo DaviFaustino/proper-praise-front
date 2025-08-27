@@ -329,41 +329,47 @@ onMounted(() => {
         <p class="text-md sm:text-lg w-[15rem] sm:w-auto text-center text-[#5D00F5] bg-white px-2 rounded-lg shadow">Um lugar para buscar o louvor ideal para a ocasião.</p>
     </div>
 
-    <div id="search-area" class="flex flex-col items-center w-fit mt-15 py-10 px-9 sm:px-10 md:px-20 rounded-2xl bg-white shadow-2xl">
-        <div class="flex items-center border-1 border-[#5D00F5] bg-white rounded-xl p-1">
-            <SearchTypeButton @selected="showOption" buttonText="por tema" optionId="by-theme" class="h-7 w-32 sm:w-40 rounded-lg" :class="[ byThemeOn ? 'bg-[#5D00F5] text-white' : 'bg-white text-[#5D00F5]' ]"/>
-            <SearchTypeButton @selected="showOption" buttonText="por título" optionId="by-title" class="h-7 w-32 sm:w-40 rounded-lg" :class="[ byThemeOn ? 'bg-white text-[#5D00F5]' : 'bg-[#5D00F5] text-white' ]"/>
+    <div id="search-area" class="flex flex-col items-center w-fit mt-5 sm:mt-15 py-7 sm:py-10 px-9 sm:px-10 md:px-20 rounded-2xl sm:bg-white sm:shadow-2xl">
+        <div class="border-y-10 sm:border-y-0 border-x-15 sm:border-x-0 rounded-2xl border-white shadow-lg sm:shadow-none">
+            <div class="flex items-center border-1 border-[#5D00F5] bg-white rounded-xl p-1">
+                <SearchTypeButton @selected="showOption" buttonText="por tema" optionId="by-theme" class="h-7 w-32 sm:w-40 rounded-lg" :class="[ byThemeOn ? 'bg-[#5D00F5] text-white' : 'bg-white text-[#5D00F5]' ]"/>
+                <SearchTypeButton @selected="showOption" buttonText="por título" optionId="by-title" class="h-7 w-32 sm:w-40 rounded-lg" :class="[ byThemeOn ? 'bg-white text-[#5D00F5]' : 'bg-[#5D00F5] text-white' ]"/>
+            </div>
         </div>
 
-        <div class="flex flex-col items-center mt-10">
-            <div class="relative">
-                <input type="text" :placeholder="searchInputPlaceHolder" v-model="searchInput" class="border-2 border-[#5D00F5] rounded-lg p-2 w-[20rem] sm:w-96" @input="onInputChange" @focus="inputFocused = true" @blur="handleInputBlur">
+        <div class="flex flex-col items-center mt-3 sm:mt-10">
+            <div class="border-t-20 border-b-10 sm:border-y-0 border-x-25 sm:border-x-0 rounded-2xl border-white bg-white shadow-lg sm:shadow-none">
+                <div class="relative">
+                    <input type="text" :placeholder="searchInputPlaceHolder" v-model="searchInput" class="border-2 border-[#5D00F5] rounded-lg p-2 w-[20rem] sm:w-96" @input="onInputChange" @focus="inputFocused = true" @blur="handleInputBlur">
 
-                <div v-if="showThemeSuggestions" class="absolute top-full left-0 w-fit max-h-44 overflow-y-auto mt-0.5 rounded-lg bg-[#5D00F5] bg-opacity-80 text-white z-10">
-                    <ul class="mt-1">
-                        <li v-for="ts in filteredThemeSuggestions" :key="ts" :id="ts" class="hover:bg-white px-2 pr-5">
-                            <button type="button" @click="searchInput = ts" class="w-full hover:text-[#5D00F5] text-left">{{ ts }}</button>
-                        </li>
-                    </ul>
+                    <div v-if="showThemeSuggestions" class="absolute top-full left-0 w-fit max-h-44 overflow-y-auto mt-0.5 rounded-lg bg-[#5D00F5] bg-opacity-80 text-white z-10">
+                        <ul class="mt-1">
+                            <li v-for="ts in filteredThemeSuggestions" :key="ts" :id="ts" class="hover:bg-white px-2 pr-5">
+                                <button type="button" @click="searchInput = ts" class="w-full hover:text-[#5D00F5] text-left">{{ ts }}</button>
+                            </li>
+                        </ul>
+                    </div>
                 </div>
-            </div>
 
-            <div v-if="byThemeOn" class=" w-[20rem] sm:w-96">
-                <button class="flex items-center space-x-2 mb-1 text-lg" @click="dynamicTrackOn = !dynamicTrackOn">
-                    <img :src="arrowicon" alt="glass" class="w-5 h-7 my-1 ml-2" :class="[ dynamicTrackOn ? 'rotate-180' : '' ]"/>
-                    <div class="text-[#5D00F5]" v-if="!dynamicTrackOn">definir dinâmica</div>
-                </button>
+                <div v-if="byThemeOn" class=" w-[20rem] sm:w-96">
+                    <button class="flex items-center space-x-2 mb-0 sm:mb-1 text-lg" @click="dynamicTrackOn = !dynamicTrackOn">
+                        <img :src="arrowicon" alt="glass" class="w-5 h-7 my-1 ml-2" :class="[ dynamicTrackOn ? 'rotate-180' : '' ]"/>
+                        <div class="text-[#5D00F5]" v-if="!dynamicTrackOn">definir dinâmica</div>
+                    </button>
 
-                <div id="track" class="relative w-[20rem] sm:w-96 h-4 rounded-2xl top-1/2 -translate-y-1/2 bg-cover bg-center" style="background: linear-gradient(90deg,rgba(0, 188, 250, 1) 0%, rgba(93, 0, 245, 1) 50%, rgba(245, 1, 6, 1) 100%);" v-if="dynamicTrackOn" @mousedown="startDragging">
-                    <div class="absolute h-5 border-4 border-gray-700 rounded-2xl top-1/2 -translate-y-1/2 pointer-events-none" :class="[isSearchInputFull ? 'w-10 sm:w-12' : 'w-[10px] sm:w-3' ]" :style="{left: knobX + '%'}"></div>
+                    <div id="track" class="relative w-[20rem] sm:w-96 h-4 rounded-2xl top-1/2 -translate-y-1/2 bg-cover bg-center" style="background: linear-gradient(90deg,rgba(0, 188, 250, 1) 0%, rgba(93, 0, 245, 1) 50%, rgba(245, 1, 6, 1) 100%);" v-if="dynamicTrackOn" @mousedown="startDragging">
+                        <div class="absolute h-5 border-4 border-gray-700 rounded-2xl top-1/2 -translate-y-1/2 pointer-events-none" :class="[isSearchInputFull ? 'w-10 sm:w-12' : 'w-[10px] sm:w-3' ]" :style="{left: knobX + '%'}"></div>
+                    </div>
                 </div>
             </div>
 
             <div :class="[ dynamicTrackOn || !byThemeOn ? 'h-8': 'h-4']"></div>
-            <button type="button" :disabled="isRequestButtonDisabled" @click="newSearch(0, false)" class="flex items-center border-1 border-[#5D00F5] rounded-lg py-1 px-2 space-x-2" :class="[ isRequestButtonDisabled ? 'opacity-60' : '' ]">
-                <img :src="mglassicon" alt="glass" class="size-5" draggable="false">
-                <div class="text-lg text-[#5D00F5]">Buscar</div>
-            </button>
+            <div class="bg-white p-2 rounded-xl shadow-xl sm:shadow-none">
+                <button type="button" :disabled="isRequestButtonDisabled" @click="newSearch(0, false)" class="flex items-center border-1 border-[#5D00F5] rounded-lg py-1 px-2 space-x-2" :class="{ 'opacity-60': isRequestButtonDisabled }">
+                    <img :src="mglassicon" alt="glass" class="size-5" draggable="false">
+                    <div class="text-lg text-[#5D00F5]">Buscar</div>
+                </button>
+            </div>
         </div>
     </div>
 
