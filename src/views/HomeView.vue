@@ -47,7 +47,9 @@ const showThemeSuggestions = computed(() => {
 function onInputChange(event) {
     if (event.target.value[0] === " ") {
         searchInput.value = "";
-    };
+    } else {
+        searchInput.value = event.target.value;
+    }
 
     // compare with first 3 letters
     if (byThemeOn.value && searchInput.value.length > 2) {
