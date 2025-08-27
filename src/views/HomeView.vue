@@ -150,6 +150,8 @@ const isLoading = ref(false);
 
 async function newSearch(pageNumber, isPageNavigation) {
     window.scrollTo({ top: 300, behavior: 'smooth' });
+    window.dispatchEvent(new Event('scroll'));
+    stopedScrolling = false
 
     isLoading.value = true;
 
@@ -175,7 +177,7 @@ async function newSearch(pageNumber, isPageNavigation) {
             if (themeExists || (dynamicTrackOn.value && searchInput.value.length === 0)) {
                 await requestVersionsByThemeAndDynamics(pageNumber);
             } else {
-                versions.values = [];
+                receivedVersions = [];
             }
             lastSearchWasByTitle.value = false;
         } else {
@@ -193,13 +195,7 @@ async function newSearch(pageNumber, isPageNavigation) {
         }
     }
 
-    isLoading.value = false;
-
-    if (versions.values.length === 0) {
-        zeroResultsFound.value = true;
-    } else {
-        zeroResultsFound.value = false;
-    }
+    setVersions(isPageNavigation);
 }
 
 function checkIfSearchedThemeExists() {
@@ -214,6 +210,7 @@ function checkIfSearchedThemeExists() {
 }
 
 const backendURL = import.meta.env.VITE_BACKEND_URL;
+let receivedVersions;
 const versions = reactive({ values:[] })
 const totalPages = ref(0);
 const currentPage = ref(1);
@@ -242,7 +239,7 @@ function requestVersionsByThemeAndDynamics(pageNumber) {
 
     return axios.get(fullURL)
         .then(response => {
-            versions.values = response.data.versions;
+            receivedVersions = response.data.versions;
             totalPages.value = response.data.totalPages;
 
             if (byThemeOn.value) {
@@ -266,7 +263,7 @@ function requestVersionsByTitle(pageNumber) {
 
     return axios.get(fullURL)
         .then(response => {
-            versions.values = response.data.versions;
+            receivedVersions = response.data.versions;
             totalPages.value = response.data.totalPages;
 
             if (!byThemeOn.value) {
@@ -277,6 +274,32 @@ function requestVersionsByTitle(pageNumber) {
             console.log(error);
         });
 }
+
+let isScrolling;
+let stopedScrolling = true;
+
+function setVersions(isPageNavigation) {
+    if ((stopedScrolling || !isPageNavigation) && (receivedVersions != null)) {
+        versions.values = receivedVersions;
+        receivedVersions = null;
+        isLoading.value = false;
+
+        if (versions.values.length === 0) {
+            zeroResultsFound.value = true;
+        } else {
+            zeroResultsFound.value = false;
+        }
+    }
+}
+
+window.addEventListener('scroll', () => {
+    clearTimeout(isScrolling);
+
+    isScrolling = setTimeout(() => {
+        stopedScrolling = true;
+        setVersions(true);
+    }, 50);
+});
 
 const dynamicsColors = ['#03b6fa','#09aafa','#0f9ef9','#1493f9','#1a87f9','#207bf8','#266ff8','#2c63f8','#3158f7','#374cf7',
 '#3d40f7','#4334f6','#4929f6','#4f1df6','#5411f5','#5a06f5','#6200ed','#6b00de','#7500cf','#7e00c0','#8800b1','#9100a2',
