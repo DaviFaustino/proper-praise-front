@@ -380,10 +380,10 @@ onMounted(() => {
     <div id="loading" v-if="isLoading" class="mt-5 size-15 border-8 border-t-white border-b-[#5D00F5] border-r-[#5D00F5] border-l-[#5D00F5] rounded-full animate-spin"></div>
 
     <div v-if="isVersionsListVisible" class="flex flex-col items-center w-fit mt-5 mb-10 rounded-2xl" :class="{ 'opacity-50 pointer-events-none': isLoading }">
-        <ul class="flex flex-col">
-            <li v-for="version in versions.values" class="bg-white rounded-xl p-1 m-1 shadow-xl">
-                <div class="rounded-lg p-[1px] m-2 bg-gradient-to-r from-[#5D00F5]" :class="`to-[${dynamicsColors[version.songDynamics]}]`">
-                    <div class="flex flex-col w-full sm:w-[28rem] md:w-[33rem] bg-white rounded-[7px] p-2">
+        <ul class="flex flex-col max-w-screen px-2">
+            <li v-for="version in versions.values" class="bg-white max-w-full rounded-xl p-1 m-1 shadow-xl">
+                <div class="max-w-full rounded-lg p-[1px] m-2 bg-gradient-to-r from-[#5D00F5]" :class="`to-[${dynamicsColors[version.songDynamics]}]`">
+                    <div class="max-w-full flex flex-col w-[26rem] sm:w-[28rem] md:w-[33rem] bg-white rounded-[7px] p-2">
                         <div class="flex">
                             <div class="flex flex-col w-full">
                                 <span class="text-xl text-[#5D00F5] font-bold">{{ version.title }}</span>
