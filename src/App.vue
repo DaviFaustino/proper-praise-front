@@ -20,6 +20,12 @@ function setBackgroundImage(value) {
     <div class="relative min-h-screen flex flex-col overflow-hidden">
         <img :src="bgImageUrl" class="fixed z-0 pointer-events-none object-cover min-h-screen" alt="Background">
 
+        <header class="relative flex items-center h-10 w-full bg-[#5D00F5]">
+            <span class="ml-2 text-white font-bold text-xl">
+                <RouterLink to="/">KDLouvor</RouterLink>
+            </span>
+        </header>
+
         <main class="relative flex flex-col items-center flex-grow">
             <RouterView @gotten-side-margin="setBackgroundImage" />
         </main>
