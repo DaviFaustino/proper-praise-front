@@ -1,8 +1,8 @@
 /** @type {import('tailwindcss').Config} */
 export default {
   content: [
-    './index.html',
-    './src/**/*.{vue,js,ts,jsx,tsx}',
+    '.app/**/*.{vue,js,ts}',
+    '.app/app.vue'
   ],
   safelist: [
     'bg-[#03b6fa]','bg-[#09aafa]','bg-[#0f9ef9]','bg-[#1493f9]','bg-[#1a87f9]','bg-[#207bf8]','bg-[#266ff8]','bg-[#2c63f8]',
