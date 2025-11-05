@@ -1,5 +1,5 @@
 <template>
-    <div class="my-10 sm:my-10 lg:my-15 mx-5 sm:mx-10 md:mx-20 lg:mx-32 py-5 md:py-10 px-10 md:px-15 lg:px-32 bg-white">
+    <div class="my-10 sm:my-10 lg:my-[3.75rem] mx-5 sm:mx-10 md:mx-20 lg:mx-32 py-5 md:py-10 px-10 md:px-[3.75rem] lg:px-32 bg-white">
         <h2 class="text-2xl font-bold text-[#5D00F5]">
             Termos e Condições
         </h2>
