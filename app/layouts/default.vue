@@ -1,6 +1,9 @@
 <script setup>
 import { ref } from 'vue';
+import { onMounted, onUnmounted, onBeforeUnmount } from 'vue';
+import { useEventBus } from '#imports';
 
+const { on, off } = useEventBus();
 const bgImageUrl = ref('/images/background.webp');
 
 function setBackgroundImage(value) {
@@ -14,6 +17,15 @@ function setBackgroundImage(value) {
         bgImageUrl.value = '/images/background1.webp';
     }
 }
+
+onMounted(() => {
+    on('gotten-side-margin', setBackgroundImage);
+    window.dispatchEvent(new Event('resize'));
+})
+
+onUnmounted(() => {
+    off('gotten-side-margin', setBackgroundImage);
+})
 </script>
 
 <template>
@@ -48,9 +60,9 @@ function setBackgroundImage(value) {
             </a>
         </header>
 
-        <main class="relative flex flex-col items-center flex-grow">
-            <RouterView @gotten-side-margin="setBackgroundImage" />
-        </main>
+        <div class="relative flex flex-col items-center flex-grow">
+            <slot @gotten-side-margin="setBackgroundImage"></slot>
+        </div>
     
         <footer class="relative flex flex-col h-20 bg-[#5D00F5] justify-center items-center">
             <span class="text-white font-bold text-xl mb-2">KDLouvor</span>

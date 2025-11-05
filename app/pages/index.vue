@@ -2,9 +2,10 @@
 import axios from 'axios';
 import { onMounted, computed, reactive, ref } from 'vue';
 import SearchTypeButton from '../components/SearchTypeButton.vue';
-import arrowicon from '/src/assets/arrow.svg';
-import mglassicon from '/src/assets/ma-glass-icon.svg';
-import logo from '/src/assets/logo.svg'
+import arrowicon from '~/assets/arrow.svg';
+import mglassicon from '~/assets/ma-glass-icon.svg';
+import logo from '~/assets/logo.svg'
+import { useEventBus } from '#imports';
 
 const byThemeOn = ref(true);
 
@@ -211,7 +212,8 @@ function checkIfSearchedThemeExists() {
     return false;
 }
 
-const backendURL = import.meta.env.VITE_BACKEND_URL;
+const config = useRuntimeConfig();
+const backendURL = config.public.backendUrl;
 let receivedVersions;
 const versions = reactive({ values:[] })
 const totalPages = ref(0);
@@ -294,20 +296,11 @@ function setVersions(isPageNavigation) {
     }
 }
 
-window.addEventListener('scroll', () => {
-    clearTimeout(isScrolling);
-
-    isScrolling = setTimeout(() => {
-        stopedScrolling = true;
-        setVersions(true);
-    }, 50);
-});
-
 const dynamicsColors = ['#03b6fa','#09aafa','#0f9ef9','#1493f9','#1a87f9','#207bf8','#266ff8','#2c63f8','#3158f7','#374cf7',
 '#3d40f7','#4334f6','#4929f6','#4f1df6','#5411f5','#5a06f5','#6200ed','#6b00de','#7500cf','#7e00c0','#8800b1','#9100a2',
 '#9b0093','#a40084','#ae0176','#b70167','#c10158','#ca0149','#d4013a','#dd012b','#e7011c','#f0010d']
 
-const emit = defineEmits(['gotten-side-margin'])
+const { emit } = useEventBus();
 
 function refreshSearchAreaSideMargin() {
     const searchAreaTrackRect = document.querySelector('#search-area').getBoundingClientRect();
@@ -315,6 +308,15 @@ function refreshSearchAreaSideMargin() {
 }
 
 onMounted(() => {
+    window.addEventListener('scroll', () => {
+        clearTimeout(isScrolling);
+
+        isScrolling = setTimeout(() => {
+            stopedScrolling = true;
+            setVersions(true);
+        }, 50);
+    });
+
     window.addEventListener('resize', refreshSearchAreaSideMargin);
     refreshSearchAreaSideMargin();
 })
@@ -326,19 +328,19 @@ onMounted(() => {
             <img :src="logo" alt="Logo" class="w-72 sm:w-96 h-auto pointer-events-none"/>
         </div>
 
-        <p class="text-md sm:text-lg w-[15rem] sm:w-auto text-center text-[#5D00F5] bg-white px-2 rounded-lg shadow">Um lugar para buscar o louvor ideal para a ocasião.</p>
+        <p class="sm:text-lg w-[15rem] sm:w-auto text-center text-[#5D00F5] bg-white px-2 rounded-lg shadow">Um lugar para buscar o louvor ideal para a ocasião.</p>
     </div>
 
-    <div id="search-area" class="flex flex-col items-center w-fit mt-5 sm:mt-15 py-7 sm:py-10 px-9 sm:px-10 md:px-20 rounded-2xl sm:bg-white sm:shadow-2xl">
-        <div class="border-y-10 sm:border-y-0 border-x-15 sm:border-x-0 rounded-2xl border-white shadow-lg sm:shadow-none">
-            <div class="flex items-center border-1 border-[#5D00F5] bg-white rounded-xl p-1">
+    <div id="search-area" class="flex flex-col items-center w-fit mt-5 sm:mt-[3.75rem] py-7 sm:py-10 px-9 sm:px-10 md:px-20 rounded-2xl sm:bg-white sm:shadow-2xl">
+        <div class="border-y-[10px] sm:border-y-0 border-x-[15px] sm:border-x-0 rounded-2xl border-white shadow-lg sm:shadow-none">
+            <div class="flex items-center border-[1px] border-[#5D00F5] bg-white rounded-xl p-1">
                 <SearchTypeButton @selected="showOption" buttonText="por tema" optionId="by-theme" class="h-7 w-32 sm:w-40 rounded-lg" :class="[ byThemeOn ? 'bg-[#5D00F5] text-white' : 'bg-white text-[#5D00F5]' ]"/>
                 <SearchTypeButton @selected="showOption" buttonText="por título" optionId="by-title" class="h-7 w-32 sm:w-40 rounded-lg" :class="[ byThemeOn ? 'bg-white text-[#5D00F5]' : 'bg-[#5D00F5] text-white' ]"/>
             </div>
         </div>
 
         <div class="flex flex-col items-center mt-3 sm:mt-10">
-            <div class="border-t-20 border-b-10 sm:border-y-0 border-x-25 sm:border-x-0 rounded-2xl border-white bg-white shadow-lg sm:shadow-none">
+            <div class="border-t-[20px] border-b-[10px] sm:border-y-0 border-x-[25px] sm:border-x-0 rounded-2xl border-white bg-white shadow-lg sm:shadow-none">
                 <div class="relative">
                     <input type="text" :placeholder="searchInputPlaceHolder" v-model="searchInput" class="border-2 border-[#5D00F5] rounded-lg p-2 w-[20rem] sm:w-96" @input="onInputChange" @focus="inputFocused = true" @blur="handleInputBlur">
 
@@ -365,7 +367,7 @@ onMounted(() => {
 
             <div :class="[ dynamicTrackOn || !byThemeOn ? 'h-8': 'h-4']"></div>
             <div class="bg-white p-2 rounded-xl shadow-xl sm:shadow-none">
-                <button type="button" :disabled="isRequestButtonDisabled" @click="newSearch(0, false)" class="flex items-center border-1 border-[#5D00F5] rounded-lg py-1 px-2 space-x-2" :class="{ 'opacity-60': isRequestButtonDisabled }">
+                <button type="button" :disabled="isRequestButtonDisabled" @click="newSearch(0, false)" class="flex items-center border-[1px] border-[#5D00F5] rounded-lg py-1 px-2 space-x-2" :class="{ 'opacity-60': isRequestButtonDisabled }">
                     <img :src="mglassicon" alt="glass" class="size-5" draggable="false">
                     <div class="text-lg text-[#5D00F5]">Buscar</div>
                 </button>
@@ -377,10 +379,10 @@ onMounted(() => {
         <span>0 resultados encontrados</span>
     </div>
 
-    <div id="loading" v-if="isLoading" class="mt-5 size-15 border-8 border-t-white border-b-[#5D00F5] border-r-[#5D00F5] border-l-[#5D00F5] rounded-full animate-spin"></div>
+    <div id="loading" v-if="isLoading" class="mt-5 size-[3.75rem] border-8 border-t-white border-b-[#5D00F5] border-r-[#5D00F5] border-l-[#5D00F5] rounded-full animate-spin"></div>
 
     <div v-if="isVersionsListVisible" class="flex flex-col items-center w-fit mt-5 mb-10 rounded-2xl" :class="{ 'opacity-50 pointer-events-none': isLoading }">
-        <ul class="flex flex-col max-w-screen px-2">
+        <ul class="flex flex-col max-w-[100vw] px-2">
             <li v-for="version in versions.values" class="bg-white max-w-full rounded-xl p-1 m-1 shadow-xl">
                 <div class="max-w-full rounded-lg p-[1px] m-2 bg-gradient-to-r from-[#5D00F5]" :class="`to-[${dynamicsColors[version.songDynamics]}]`">
                     <div class="max-w-full flex flex-col w-[26rem] sm:w-[28rem] md:w-[33rem] bg-white rounded-[7px] p-2">
@@ -407,7 +409,7 @@ onMounted(() => {
                                         <span class="text-[#5D00F5] text-[9px] h-2 mt-[1px] font-bold">You</span>
                                         <span class="text-[#5D00F5] text-[9px] h-2 font-bold">Tube</span>
                                     </div>
-                                    <div class="absolute w-12 h-5  border-1 rounded border-[#5D00F5]"></div>
+                                    <div class="absolute w-12 h-5 border-[1px] rounded border-[#5D00F5]"></div>
                                 </a>
                             </div>
                         </div>
@@ -420,15 +422,15 @@ onMounted(() => {
         </ul>
 
         <div class="flex bg-white shadow-xl rounded-xl items-center justify-center mt-5 py-2 px-5 space-x-2">
-            <button type="button" :disabled="currentPage === 0" @click="newSearch(currentPage - 1, true)" class="flex items-center justify-center h-8 w-12 bg-white rounded-lg border-1 border-[#5D00F5]" :class="[ currentPage === 0 ? 'opacity-60' : '' ]">
-                <img :src="arrowicon" alt="lest arrow" class="w-5 h-7 rotate-270"/>
+            <button type="button" :disabled="currentPage === 0" @click="newSearch(currentPage - 1, true)" class="flex items-center justify-center h-8 w-12 bg-white rounded-lg border-[1px] border-[#5D00F5]" :class="[ currentPage === 0 ? 'opacity-60' : '' ]">
+                <img :src="arrowicon" alt="lest arrow" class="w-5 h-7 -rotate-90"/>
             </button>
             <div class="text-[#5D00F5] text-xl">
                 <span>{{ currentPage + 1 }}</span>
                 de
                 <span>{{ totalPages }}</span>
             </div>
-            <button type="button" :disabled="currentPage === totalPages - 1" @click="newSearch(currentPage + 1, true)" class="flex items-center justify-center h-8 w-12 bg-white rounded-lg border-1 border-[#5D00F5]" :class="[ currentPage === totalPages - 1 ? 'opacity-60' : '' ]">
+            <button type="button" :disabled="currentPage === totalPages - 1" @click="newSearch(currentPage + 1, true)" class="flex items-center justify-center h-8 w-12 bg-white rounded-lg border-[1px] border-[#5D00F5]" :class="[ currentPage === totalPages - 1 ? 'opacity-60' : '' ]">
                 <img :src="arrowicon" alt="right arrow" class="w-5 h-7 rotate-90"/>
             </button>
         </div>
