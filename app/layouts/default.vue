@@ -30,7 +30,13 @@ onUnmounted(() => {
 
 <template>
     <div class="relative min-h-screen flex flex-col overflow-hidden">
-        <img :src="bgImageUrl" class="fixed z-0 pointer-events-none object-cover min-h-screen" alt="Background">
+        <picture>
+            <source srcset="/images/background4.webp" media="(min-width: 1844px)"/>
+            <source srcset="/images/background3.webp" media="(min-width: 1444px)"/>
+            <source srcset="/images/background2.webp" media="(min-width: 1094px)"/>
+            <source srcset="/images/background1.webp" media="(min-width: 0px)"/>
+            <img src="/images/background.webp" class="fixed z-0 pointer-events-none object-cover min-h-screen" alt="Background">
+        </picture>
 
         <header class="relative flex items-center h-10 w-full bg-[#5D00F5]">
             <span class="ml-2 text-white font-bold text-xl">
