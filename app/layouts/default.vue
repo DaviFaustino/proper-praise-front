@@ -1,33 +1,3 @@
-<script setup>
-import { ref } from 'vue';
-import { onMounted, onUnmounted, onBeforeUnmount } from 'vue';
-import { useEventBus } from '#imports';
-
-const { on, off } = useEventBus();
-const bgImageUrl = ref('/images/background.webp');
-
-function setBackgroundImage(value) {
-    if (value > 650) {
-        bgImageUrl.value = '/images/background4.webp';
-    } else if (value > 450) {
-        bgImageUrl.value = '/images/background3.webp';
-    } else if (value > 275) {
-        bgImageUrl.value = '/images/background2.webp';
-    } else {
-        bgImageUrl.value = '/images/background1.webp';
-    }
-}
-
-onMounted(() => {
-    on('gotten-side-margin', setBackgroundImage);
-    window.dispatchEvent(new Event('resize'));
-})
-
-onUnmounted(() => {
-    off('gotten-side-margin', setBackgroundImage);
-})
-</script>
-
 <template>
     <div class="relative min-h-screen flex flex-col overflow-hidden">
         <picture>
@@ -67,7 +37,7 @@ onUnmounted(() => {
         </header>
 
         <div class="relative flex flex-col items-center flex-grow">
-            <slot @gotten-side-margin="setBackgroundImage"></slot>
+            <slot></slot>
         </div>
     
         <footer class="relative flex flex-col h-20 bg-[#5D00F5] justify-center items-center">

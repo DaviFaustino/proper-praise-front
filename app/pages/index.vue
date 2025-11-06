@@ -5,7 +5,6 @@ import SearchTypeButton from '../components/SearchTypeButton.vue';
 import arrowicon from '~/assets/arrow.svg';
 import mglassicon from '~/assets/ma-glass-icon.svg';
 import logo from '~/assets/logo.svg'
-import { useEventBus } from '#imports';
 
 const byThemeOn = ref(true);
 
@@ -300,13 +299,6 @@ const dynamicsColors = ['#03b6fa','#09aafa','#0f9ef9','#1493f9','#1a87f9','#207b
 '#3d40f7','#4334f6','#4929f6','#4f1df6','#5411f5','#5a06f5','#6200ed','#6b00de','#7500cf','#7e00c0','#8800b1','#9100a2',
 '#9b0093','#a40084','#ae0176','#b70167','#c10158','#ca0149','#d4013a','#dd012b','#e7011c','#f0010d']
 
-const { emit } = useEventBus();
-
-function refreshSearchAreaSideMargin() {
-    const searchAreaTrackRect = document.querySelector('#search-area').getBoundingClientRect();
-    emit('gotten-side-margin', searchAreaTrackRect.left);
-}
-
 onMounted(() => {
     window.addEventListener('scroll', () => {
         clearTimeout(isScrolling);
@@ -316,9 +308,6 @@ onMounted(() => {
             setVersions(true);
         }, 50);
     });
-
-    window.addEventListener('resize', refreshSearchAreaSideMargin);
-    refreshSearchAreaSideMargin();
 })
 </script>
 
