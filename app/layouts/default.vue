@@ -1,7 +1,16 @@
 <script setup>
 import axios from "axios";
 
-const { isAuthenticated, setAccessToken } = useAuth();
+const { isAuthenticated, setAccessToken, clearAccessToken } = useAuth();
+
+function logout() {
+    clearAccessToken();
+    localStorage.removeItem('refreshToken');
+
+    showLogoutConfirm.value = false;
+}
+
+const showLogoutConfirm = ref(false);
 
 onMounted(() => {
     if (!isAuthenticated.value && localStorage.getItem('refreshToken')) {
@@ -53,8 +62,21 @@ onMounted(() => {
                     </g>
                 </svg>
             </a>
-            <button v-if="isAuthenticated" class="mr-2 w-[4.5rem] h-7 text-white text-lg font-bold bg-red-600 text-center rounded-lg">sair</button>
+            <button v-if="isAuthenticated" @click="showLogoutConfirm=true" class="mr-2 w-[4.5rem] h-7 text-white text-lg font-bold bg-red-600 text-center rounded-lg">sair</button>
         </header>
+        
+        <Transition>
+            <div v-if="showLogoutConfirm" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+                <div class="bg-white p-6 rounded-xl shadow-xl w-80 text-center">
+                    <p class="mb-6">Você realmente quer sair?</p>
+
+                    <div class="flex justify-around">
+                        <button class="w-20 py-1 bg-gray-300 rounded-lg" @click="showLogoutConfirm=false">Cancel</button>
+                        <button class="w-20 py-1 bg-red-600 text-white rounded-lg" @click="logout">Sair</button>
+                    </div>
+                </div>
+            </div>
+        </Transition>
 
         <div class="relative flex flex-col items-center flex-grow">
             <slot></slot>
