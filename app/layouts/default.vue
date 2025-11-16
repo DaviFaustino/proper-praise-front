@@ -1,3 +1,22 @@
+<script setup>
+import axios from "axios";
+
+const { isAuthenticated, setAccessToken } = useAuth();
+
+onMounted(() => {
+    if (!isAuthenticated.value && localStorage.getItem('refreshToken')) {
+        axios.post(useRuntimeConfig().public.backendUrl + "/api/authentication/refresh", {
+                refreshToken: localStorage.getItem('refreshToken')
+            }).then(response => {
+                setAccessToken(response.data.accessToken);
+                localStorage.setItem('refreshToken', response.data.refreshToken);
+            }).catch(error => {
+                console.error("There was an error!");
+            });
+    }
+});
+</script>
+
 <template>
     <div class="relative min-h-screen flex flex-col overflow-hidden">
         <picture>
@@ -34,6 +53,7 @@
                     </g>
                 </svg>
             </a>
+            <button v-if="isAuthenticated" class="mr-2 w-[4.5rem] h-7 text-white text-lg font-bold bg-red-600 text-center rounded-lg">sair</button>
         </header>
 
         <div class="relative flex flex-col items-center flex-grow">
