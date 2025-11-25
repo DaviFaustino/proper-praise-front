@@ -6,6 +6,8 @@ import arrowicon from '~/assets/arrow.svg';
 import mglassicon from '~/assets/ma-glass-icon.svg';
 import logo from '~/assets/logo.svg'
 
+const { searchInput, themesNames, filteredThemeSuggestions, onInputChange, requestThemesNames } = useThemesSearch();
+
 const byThemeOn = ref(true);
 
 function showOption(optionId) {
@@ -27,7 +29,6 @@ const knobX = computed(() => { return (knobPosition.value) / 32 * 100 });
 const searchInputPlaceHolder = computed(() => {
     return byThemeOn.value ? "Insira um tema" : "Insira um título";
 });
-const searchInput = ref("");
 const isSearchInputFull = computed(() => {
     let result = searchInput.value != "";
     if (result) {
@@ -38,68 +39,9 @@ const isSearchInputFull = computed(() => {
     return result;
 });
 
-const lastThemesNamesSearch = ref('');
 const inputFocused = ref(false);
 const showThemeSuggestions = computed(() => {
     return (byThemeOn.value && searchInput.value.length > 2 && inputFocused.value)
-});
-
-function onInputChange(event) {
-    if (event.target.value[0] === " ") {
-        searchInput.value = "";
-    } else {
-        searchInput.value = event.target.value;
-    }
-
-    // compare with first 3 letters
-    if (byThemeOn.value && searchInput.value.length > 2) {
-        let firstThreeLetters = searchInput.value.substring(0, 3);
-
-        if (firstThreeLetters.toLowerCase() !== lastThemesNamesSearch.value.toLowerCase()) {
-            requestThemesNames(firstThreeLetters);
-        }
-    }
-}
-
-const themesNames = ref([]);
-
-function requestThemesNames(firstThreeLetters) {
-    const fullURL = `${backendURL}/api/song/themes?searchTerm=${firstThreeLetters}`;
-
-    return axios.get(fullURL)
-        .then(response => {
-            lastThemesNamesSearch.value = firstThreeLetters;
-            themesNames.value = response.data;
-            sortThemesNames(firstThreeLetters);
-        })
-        .catch(error => {
-            console.error(error);
-        });
-}
-
-function sortThemesNames(firstThreeLetters) {
-    themesNames.value.sort();
-    let totalThemesWithFirstThreeLetters = 0;
-
-    for (let i = themesNames.value.length - 1; i >= 0; i--) {
-        if (themesNames.value[i + totalThemesWithFirstThreeLetters].substring(0, 3).toLowerCase() === firstThreeLetters.toLowerCase()) {
-            let theme = themesNames.value.splice(i + totalThemesWithFirstThreeLetters, 1);
-            themesNames.value = theme.concat(themesNames.value);
-
-            totalThemesWithFirstThreeLetters++;
-        }
-    }
-}
-
-const filteredThemeSuggestions = computed(() => {
-    let filtered = [];
-
-    for (let i = 0; i < themesNames.value.length; i++) {
-        if (themesNames.value.at(i).toLowerCase().includes(searchInput.value.toLowerCase())) {
-            filtered.push(themesNames.value.at(i));
-        }
-    }
-    return filtered;
 });
 
 function handleInputBlur() {
@@ -331,7 +273,7 @@ onMounted(() => {
         <div class="flex flex-col items-center mt-3 sm:mt-10">
             <div class="border-t-[20px] border-b-[10px] sm:border-y-0 border-x-[25px] sm:border-x-0 rounded-2xl border-white bg-white shadow-lg sm:shadow-none">
                 <div class="relative">
-                    <input type="text" :placeholder="searchInputPlaceHolder" v-model="searchInput" class="border-2 border-[#5D00F5] rounded-lg p-2 w-[20rem] sm:w-96" @input="onInputChange" @focus="inputFocused = true" @blur="handleInputBlur">
+                    <input type="text" :placeholder="searchInputPlaceHolder" v-model="searchInput" class="border-2 border-[#5D00F5] rounded-lg p-2 w-[20rem] sm:w-96" @input="onInputChange($event, byThemeOn)" @focus="inputFocused = true" @blur="handleInputBlur">
 
                     <div v-if="showThemeSuggestions" class="absolute top-full left-0 w-fit max-h-44 overflow-y-auto mt-0.5 rounded-lg bg-[#5D00F5] bg-opacity-80 text-white z-10">
                         <ul class="mt-1">
