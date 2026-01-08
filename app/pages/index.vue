@@ -208,6 +208,23 @@ const dynamicsColors = ['#03b6fa','#09aafa','#0f9ef9','#1493f9','#1a87f9','#207b
 '#3d40f7','#4334f6','#4929f6','#4f1df6','#5411f5','#5a06f5','#6200ed','#6b00de','#7500cf','#7e00c0','#8800b1','#9100a2',
 '#9b0093','#a40084','#ae0176','#b70167','#c10158','#ca0149','#d4013a','#dd012b','#e7011c','#f0010d']
 
+const { isAuthenticated } = useAuth();
+const versionToEdit = ref(null);
+const showUpdateVersionModal = ref(false);
+
+function closeUpdateVersionModal(version) {
+    showUpdateVersionModal.value = false;
+
+    if (version != null) {
+        for (let i = 0; i < versions.values.length; i++) {
+            if (versions.values[i].id === version.id) {
+                versions.values[i] = version;
+                break;
+            }
+        }
+    }
+}
+
 onMounted(() => {
     window.addEventListener('scroll', () => {
         clearTimeout(isScrolling);
@@ -281,19 +298,24 @@ onMounted(() => {
 
     <div v-if="isVersionsListVisible" class="flex flex-col items-center w-fit mt-5 mb-10 rounded-2xl" :class="{ 'opacity-50 pointer-events-none': isLoading }">
         <ul class="flex flex-col max-w-[100vw] px-2">
-            <li v-for="version in versions.values" class="bg-white max-w-full rounded-xl p-1 m-1 shadow-xl">
-                <div class="max-w-full rounded-lg p-[1px] m-2 bg-gradient-to-r from-[#5D00F5]" :class="`to-[${dynamicsColors[version.songDynamics]}]`">
+            <li v-for="versionId in Array.from({ length: versions.values.length }, (_, index) => index)" class="bg-white max-w-full rounded-xl p-1 m-1 shadow-xl">
+                <div class="max-w-full rounded-lg p-[1px] m-2 bg-gradient-to-r from-[#5D00F5]" :class="`to-[${dynamicsColors[versions.values[versionId].songDynamics]}]`">
                     <div class="max-w-full flex flex-col w-[26rem] sm:w-[28rem] md:w-[33rem] bg-white rounded-[7px] p-2">
                         <div class="flex">
-                            <div class="flex flex-col w-full">
-                                <span class="text-xl text-[#5D00F5] font-bold">{{ version.title }}</span>
-                                <span class="text-[#5D00F5]">{{ version.owner }}</span>
+                            <div class="flex flex-col w-full text-[#5D00F5]">
+                                <div class="flex w-full justify-between">
+                                    <span class="text-xl font-bold">{{ versions.values[versionId].title }}</span>
+                                    <button v-if="isAuthenticated" @click="versionToEdit=versionId; showUpdateVersionModal=true" class="flex justify-center h-6 w-16 mr-1 rounded-lg border border-[#5D00F5]">
+                                        <span>editar</span>
+                                    </button>
+                                </div>
+                                <span>{{ versions.values[versionId].owner }}</span>
                             </div>
                             <div class="flex flex-col items-center" >
-                                <div class="flex w-12 h-6 rounded-md items-center justify-center" :class="`bg-[${dynamicsColors[version.songDynamics]}]`">
-                                    <span class="text-white">{{ version.tone }}</span>
+                                <div class="flex w-12 h-6 rounded-md items-center justify-center" :class="`bg-[${dynamicsColors[versions.values[versionId].songDynamics]}]`">
+                                    <span class="text-white">{{ versions.values[versionId].tone }}</span>
                                 </div>
-                                <a :href="version.links[0]" target="_blank" rel="noopener noreferrer" class="flex w-full items-center">
+                                <a :href="versions.values[versionId].links[0]" target="_blank" rel="noopener noreferrer" class="flex w-full items-center">
                                     <svg fill="#5D00F5" class="size-6 ml-[1px]" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 310 310" xml:space="preserve" preserveAspectRatio="none">
                                         <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
                                         <g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g>
@@ -312,7 +334,7 @@ onMounted(() => {
                             </div>
                         </div>
                         <div class="flex flex-wrap w-full mt-2">
-                            <span v-for="theme in version.themes" class="mr-2 mt-1 px-2 rounded-lg text-white bg-[#5D00F5]">{{ theme }}</span>
+                            <span v-for="theme in versions.values[versionId].themes" class="mr-2 mt-1 px-2 rounded-lg text-white bg-[#5D00F5]">{{ theme }}</span>
                         </div>
                     </div>
                 </div>
@@ -335,4 +357,6 @@ onMounted(() => {
     </div>
 
     <div :class="[ isVersionsListVisible ? '': 'mb-10' ]"></div>
+
+    <LazyUpdateVersionModal v-if="showUpdateVersionModal" :version="versions.values[versionToEdit]" @closeModal="closeUpdateVersionModal"/>
 </template>
