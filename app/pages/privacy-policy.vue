@@ -72,6 +72,30 @@
                 anteriormente mencionados.</li>
         </ul>
         <br>
+
+        <h3 class="text-lg font-bold text-[#5D00F5]">Uso de Cookies</h3>
+        <br>
+        <p class="text-[#5D00F5]">
+            Este site utiliza cookies estritamente necessários para o seu funcionamento seguro e eficiente.
+        </p>
+        <ul class="list-disc list-inside pl-4 text-[#5D00F5]">
+            <li><strong>O que são</strong>: Pequenos arquivos de texto armazenados no seu navegador para reconhecer sessões de uso.</li>
+            <li>
+                <strong>Finalidade exclusiva</strong>: Utilizamos cookies apenas para gerenciar a autenticação de administradores. 
+                Eles permitem que o sistema identifique o usuário logado e proteja o acesso à área administrativa, 
+                garantindo que apenas pessoas autorizadas realizem alterações.
+            </li>
+            <li>
+                <strong>Gestão de Cookies</strong>: Por serem essenciais para a prestação do serviço solicitado (o login), esses cookies não 
+                podem ser desativados através das configurações do site. O usuário pode configurar seu navegador para 
+                bloquear ou alertar sobre esses cookies, mas algumas partes do painel administrativo podem deixar de funcionar.
+            </li>
+            <li>
+                <strong>Retenção</strong>: Estes cookies são, em sua maioria, temporários (de sessão) e são excluídos automaticamente quando 
+                o navegador é fechado.
+            </li>
+        </ul>
+        <br>
         <h3 class="text-lg font-bold text-[#5D00F5]">Mais informações</h3>
         <br>
         <p class="text-[#5D00F5]">
@@ -81,7 +105,7 @@
         </p>
         <br>
         <p class="text-[#5D00F5] font-bold">
-            Esta política é efetiva a partir de&nbsp;15 August 2025 19:47
+            Esta política é efetiva a partir de&nbsp;27 Fevereiro 2026 12:00
         </p>
     </div>
 </template>
