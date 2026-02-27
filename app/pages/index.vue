@@ -356,5 +356,5 @@ onMounted(() => {
 
     <div :class="[ isVersionsListVisible ? '': 'mb-10' ]"></div>
 
-    <LazyUpdateVersionModal v-if="showUpdateVersionModal" :version="versions.values[versionToEdit]" @closeModal="closeUpdateVersionModal"/>
+    <LazyUpdateVersionModal v-if="showUpdateVersionModal&&isAuthenticated" :version="versions.values[versionToEdit]" @closeModal="closeUpdateVersionModal"/>
 </template>
