@@ -1,28 +1,12 @@
 <script setup>
-const { isAuthenticated, setAccessToken, clearAccessToken } = useAuth();
-const { $api } = useNuxtApp();
+const { isAuthenticated, setIsAuthenticated } = useAuth();
 
 function logout() {
-    clearAccessToken();
-    localStorage.removeItem('refreshToken');
-
+    setIsAuthenticated(false);
     showLogoutConfirm.value = false;
 }
 
 const showLogoutConfirm = ref(false);
-
-onMounted(() => {
-    if (!isAuthenticated.value && localStorage.getItem('refreshToken')) {
-        $api.post("/api/authentication/refresh", {
-                refreshToken: localStorage.getItem('refreshToken')
-            }).then(response => {
-                setAccessToken(response.data.accessToken);
-                localStorage.setItem('refreshToken', response.data.refreshToken);
-            }).catch(error => {
-                console.error("There was an error!");
-            });
-    }
-});
 </script>
 
 <template>

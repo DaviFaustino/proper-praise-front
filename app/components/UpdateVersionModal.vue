@@ -107,8 +107,6 @@ const canUpdateBeMade = computed(() => {
     );
 });
 
-const { accessToken } = useAuth();
-
 function saveChanges() {
     $api.put(`/api/song/${props.version.id}`, {
         title: editedTitle.value,
@@ -121,7 +119,6 @@ function saveChanges() {
     }, {
         headers: {
             'Application-Type': 'application/json',
-            'Authorization': `Bearer ${accessToken.value}`
         }
     }).then(response => {
         closeModal(response.data);

@@ -1,24 +1,21 @@
 <script setup>
 import { ref } from "vue";
-import { useRouter } from "vue-router";
 const { $api } = useNuxtApp();
 
 const username = ref('');
 const password = ref('');
 
-const { setAccessToken } = useAuth();
-const router = useRouter();
+const { setIsAuthenticated } = useAuth();
 
 function requestLogin() {
     $api.post("/api/authentication/login", {}, {
         headers: {
-            'Authorization': 'Basic ' + btoa(`${username.value}:${password.value}`)
-        }}).then(response => {
-            setAccessToken(response.data.accessToken);
-            localStorage.setItem('refreshToken', response.data.refreshToken);
-
-            router.push('/');
-        }).catch(error => {
+            'Authorization': 'Basic ' + btoa(`${username.value}:${password.value}`),
+            'X-API-Version': '0.2'
+        }}).then(() => {
+            setIsAuthenticated(true);
+            navigateTo('/');
+        }).catch(() => {
             console.error("There was an error!");
         });
 }

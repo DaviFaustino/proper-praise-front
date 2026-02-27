@@ -1,17 +1,21 @@
 export const useAuth = () => {
-  const accessToken = useState('accessToken', () => null)
+    const isAuthenticated = useState('auth_status', () => false);
 
-  const isAuthenticated = computed(() => {
-    return accessToken.value !== null && accessToken.value !== ''
-  })
+    const setIsAuthenticated = async (value) => {
+        const { $api } = useNuxtApp();
 
-  function setAccessToken(token) {
-    accessToken.value = token
-  }
+        if (isAuthenticated.value && !value) {
+            try {
+                await $api.post('/api/authentication/logout');
+                isAuthenticated.value = false;
+                window.location.reload();
+            } catch (err) {
+                console.error('There was an error!');
+            }
+        } else {
+            isAuthenticated.value = value;
+        }
+    }
 
-  function clearAccessToken() {
-    accessToken.value = null
-  }
-
-  return { accessToken, isAuthenticated, setAccessToken, clearAccessToken }
+    return { isAuthenticated, setIsAuthenticated }
 }
