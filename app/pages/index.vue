@@ -5,6 +5,10 @@ import arrowicon from '~/assets/arrow.svg';
 import mglassicon from '~/assets/ma-glass-icon.svg';
 import logo from '~/assets/logo.svg'
 
+definePageMeta({
+    middleware: 'auth'
+})
+
 const { $api } = useNuxtApp();
 const { searchInput, themesNames, filteredThemeSuggestions, onInputChange, requestThemesNames } = useThemesSearch();
 
