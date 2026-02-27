@@ -1,7 +1,6 @@
 <script setup>
-import axios from "axios";
-
 const { isAuthenticated, setAccessToken, clearAccessToken } = useAuth();
+const { $api } = useNuxtApp();
 
 function logout() {
     clearAccessToken();
@@ -14,7 +13,7 @@ const showLogoutConfirm = ref(false);
 
 onMounted(() => {
     if (!isAuthenticated.value && localStorage.getItem('refreshToken')) {
-        axios.post(useRuntimeConfig().public.backendUrl + "/api/authentication/refresh", {
+        $api.post("/api/authentication/refresh", {
                 refreshToken: localStorage.getItem('refreshToken')
             }).then(response => {
                 setAccessToken(response.data.accessToken);

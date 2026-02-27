@@ -1,6 +1,7 @@
 <script setup>
 import { ref } from 'vue';
-import axios from 'axios';
+
+const { $api } = useNuxtApp();
 
 const props = defineProps({
     version: Object
@@ -106,11 +107,10 @@ const canUpdateBeMade = computed(() => {
     );
 });
 
-const config = useRuntimeConfig();
 const { accessToken } = useAuth();
 
 function saveChanges() {
-    axios.put(`${config.public.backendUrl}/api/song/${props.version.id}`, {
+    $api.put(`/api/song/${props.version.id}`, {
         title: editedTitle.value,
         owner: editedAuthor.value,
         links: [editedLink.value],

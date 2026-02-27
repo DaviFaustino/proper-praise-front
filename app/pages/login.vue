@@ -1,18 +1,16 @@
 <script setup>
 import { ref } from "vue";
-import axios from "axios";
 import { useRouter } from "vue-router";
+const { $api } = useNuxtApp();
 
 const username = ref('');
 const password = ref('');
 
-const config = useRuntimeConfig();
-const backendURL = config.public.backendUrl;
 const { setAccessToken } = useAuth();
 const router = useRouter();
 
 function requestLogin() {
-    axios.post(backendURL + "/api/authentication/login", {}, {
+    $api.post("/api/authentication/login", {}, {
         headers: {
             'Authorization': 'Basic ' + btoa(`${username.value}:${password.value}`)
         }}).then(response => {

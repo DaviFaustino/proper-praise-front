@@ -1,11 +1,11 @@
 <script setup>
-import axios from 'axios';
 import { onMounted, computed, reactive, ref } from 'vue';
 import SearchTypeButton from '../components/SearchTypeButton.vue';
 import arrowicon from '~/assets/arrow.svg';
 import mglassicon from '~/assets/ma-glass-icon.svg';
 import logo from '~/assets/logo.svg'
 
+const { $api } = useNuxtApp();
 const { searchInput, themesNames, filteredThemeSuggestions, onInputChange, requestThemesNames } = useThemesSearch();
 
 const byThemeOn = ref(true);
@@ -120,8 +120,6 @@ function checkIfSearchedThemeExists() {
     return false;
 }
 
-const config = useRuntimeConfig();
-const backendURL = config.public.backendUrl;
 let receivedVersions;
 const versions = reactive({ values:[] })
 const totalPages = ref(0);
@@ -137,19 +135,19 @@ function requestVersionsByThemeAndDynamics(pageNumber) {
 
     if (lastSearchByThemeAndDynamics.value !== "") {
         if (lastKnobPosition.value != null) {
-            fullURL = `${backendURL}/api/song?theme=${lastSearchByThemeAndDynamics.value}&songDynamics=${lastKnobPosition.value}&pageNumber=${pageNumber}`;
+            fullURL = `/api/song?theme=${lastSearchByThemeAndDynamics.value}&songDynamics=${lastKnobPosition.value}&pageNumber=${pageNumber}`;
         } else {
-            fullURL = `${backendURL}/api/song?theme=${lastSearchByThemeAndDynamics.value}&pageNumber=${pageNumber}`;
+            fullURL = `/api/song?theme=${lastSearchByThemeAndDynamics.value}&pageNumber=${pageNumber}`;
         }
     } else {
         if (lastKnobPosition.value != null) {
-            fullURL = `${backendURL}/api/song?songDynamics=${lastKnobPosition.value}&pageNumber=${pageNumber}`;
+            fullURL = `/api/song?songDynamics=${lastKnobPosition.value}&pageNumber=${pageNumber}`;
         } else {
             alert('Informe ao menos um parâmetro de busca.');
         }
     }
 
-    return axios.get(fullURL)
+    return $api.get(fullURL)
         .then(response => {
             receivedVersions = response.data.versions;
             totalPages.value = response.data.totalPages;
@@ -170,10 +168,10 @@ function requestVersionsByThemeAndDynamics(pageNumber) {
 }
 
 function requestVersionsByTitle(pageNumber) {
-    let fullURL = `${backendURL}/api/song/t?searchTerm=${lastSearchByTitle.value}&pageNumber=${pageNumber}`;
+    let fullURL = `/api/song/t?searchTerm=${lastSearchByTitle.value}&pageNumber=${pageNumber}`;
     currentPage.value = pageNumber;
 
-    return axios.get(fullURL)
+    return $api.get(fullURL)
         .then(response => {
             receivedVersions = response.data.versions;
             totalPages.value = response.data.totalPages;

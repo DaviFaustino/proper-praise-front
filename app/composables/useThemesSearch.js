@@ -1,12 +1,11 @@
 import { ref, computed } from 'vue';
-import axios from 'axios';
 
 export function useThemesSearch() {
+    const { $api } = useNuxtApp();
+
     const searchInput = ref("");
     const lastThemesNamesSearch = ref('');
     const themesNames = ref([]);
-    const config = useRuntimeConfig();
-    const backendURL = config.public.backendUrl;
 
     function onInputChange(event, byThemeOn) {
         if (event.target.value[0] === " ") {
@@ -25,9 +24,9 @@ export function useThemesSearch() {
     }
 
     function requestThemesNames(firstThreeLetters) {
-        const fullURL = `${backendURL}/api/song/themes?searchTerm=${firstThreeLetters}`;
+        const fullURL = `/api/song/themes?searchTerm=${firstThreeLetters}`;
 
-        return axios.get(fullURL)
+        return $api.get(fullURL)
             .then(response => {
                 lastThemesNamesSearch.value = firstThreeLetters;
                 themesNames.value = response.data;
