@@ -50,7 +50,7 @@ function handleInputBlur() {
 }
 
 const isRequestButtonDisabled = computed(() => {
-    return (!dynamicTrackOn.value && searchInput.value.length < 2) || (dynamicTrackOn && searchInput.value.length === 1) || (!byThemeOn.value && searchInput.value.length < 2);
+    return (!dynamicTrackOn.value && searchInput.value.length < 2) || (dynamicTrackOn.value && searchInput.value.length === 1) || (!byThemeOn.value && searchInput.value.length < 2);
 });
 
 const lastSearchWasByTitle = ref(false);
