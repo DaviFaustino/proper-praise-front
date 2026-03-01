@@ -34,6 +34,45 @@ const renderedArticle = computed(() => {
     markdownContent.value = `# ${title.value}\n\n<div class="publication-date">publicationMessage</div>\n\n${articleBody.value}`;
     return marked(markdownContent.value.replace('publicationMessage', publicationMessage));
 })
+
+const isTitleValid = computed(() => {
+    return title.value.length <= 160 && title.value.length > 0;
+});
+const isSlugValid = computed(() => {
+    const slugRegex = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+    return slugRegex.test(slug.value) && slug.value.length <= 100 && slug.value.length > 0;
+});
+const isExcerptValid = computed(() => {
+    return excerpt.value.length <= 300;
+});
+const isMetaTitleValid = computed(() => {
+    return metaTitle.value.length <= 60;
+});
+const isMetaDescriptionValid = computed(() => {
+    return metaDescription.value.length <= 160;
+});
+const isOgTitleValid = computed(() => {
+    return ogTitle.value.length <= 60;
+});
+const isOgDescriptionValid = computed(() => {
+    return ogDescription.value.length <= 160;
+});
+const isOgImageValid = computed(() => {
+    return ogImage.value === null ||
+        ogImage.value === '' ||
+        (ogImage.value.length > 0 && ogImage.value.startsWith(useRuntimeConfig().public.backendPublicUrl));
+});
+const isFormValid = computed(() => {
+    return isTitleValid.value &&
+        isSlugValid.value &&
+        isExcerptValid.value &&
+        isMetaTitleValid.value &&
+        isMetaDescriptionValid.value &&
+        isOgTitleValid.value &&
+        isOgDescriptionValid.value &&
+        isOgImageValid.value;
+});
+const validationFailed = ref(false);
 </script>
 
 <template>
@@ -54,9 +93,12 @@ const renderedArticle = computed(() => {
                     </div>
                     <div class="max-w-full sm:w-[26rem] h-fit bg-white shadow-md mt-2 p-4">
                         <div class="flex flex-col space-y-2">
-                            <ArticleEditingInputField label="Título" placeholder="Digite o título do artigo" v-model="title"/>
-                            <ArticleEditingInputField label="Slug" placeholder="Digite o slug do artigo" v-model="slug"/>
-                            <ArticleEditingInputTextarea label="Trecho" placeholder="Digite o trecho do artigo" v-model="excerpt"/>
+                            <ArticleEditingInputField label="Título" placeholder="Digite o título do artigo"
+                                :validationFailed="validationFailed" :isValueValid="isTitleValid" v-model="title"/>
+                            <ArticleEditingInputField label="Slug" placeholder="Digite o slug do artigo"
+                                :validationFailed="validationFailed" :isValueValid="isSlugValid" v-model="slug"/>
+                            <ArticleEditingInputTextarea label="Trecho" placeholder="Digite o trecho do artigo"
+                                :validationFailed="validationFailed" :isValueValid="isExcerptValid" v-model="excerpt"/>
                         </div>
                     </div>
                 </div>
@@ -67,13 +109,18 @@ const renderedArticle = computed(() => {
                     <div class="max-w-full sm:w-[26rem] lg:w-[50rem] h-fit bg-white shadow-md mt-2 p-4">
                         <div class="flex flex-col lg:flex-row w-full space-y-2 lg:space-y-0 lg:space-x-2">
                             <div class="w-full space-y-2">
-                                <ArticleEditingInputField label="meta title" placeholder="Digite o meta título do artigo" v-model="metaTitle"/>
-                                <ArticleEditingInputTextarea label="meta description" placeholder="Digite a meta descrição do artigo" v-model="metaDescription"/>
+                                <ArticleEditingInputField label="meta title" placeholder="Digite o meta título do artigo"
+                                    :validationFailed="validationFailed" :isValueValid="isMetaTitleValid" v-model="metaTitle"/>
+                                <ArticleEditingInputTextarea label="meta description" placeholder="Digite a meta descrição do artigo"
+                                    :validationFailed="validationFailed" :isValueValid="isMetaDescriptionValid" v-model="metaDescription"/>
                             </div>
                             <div class="w-full space-y-2">
-                                <ArticleEditingInputField label="og title" placeholder="Digite o og title do artigo" v-model="ogTitle"/>
-                                <ArticleEditingInputTextarea label="og description" placeholder="Digite o og description do artigo" v-model="ogDescription"/>
-                                <ArticleEditingInputField label="og image" placeholder="Digite o og image do artigo" v-model="ogImage"/>
+                                <ArticleEditingInputField label="og title" placeholder="Digite o og title do artigo"
+                                    :validationFailed="validationFailed" :isValueValid="isOgTitleValid" v-model="ogTitle"/>
+                                <ArticleEditingInputTextarea label="og description" placeholder="Digite o og description do artigo"
+                                    :validationFailed="validationFailed" :isValueValid="isOgDescriptionValid" v-model="ogDescription"/>
+                                <ArticleEditingInputField label="og image" placeholder="Digite o og image do artigo"
+                                    :validationFailed="validationFailed" :isValueValid="isOgImageValid" v-model="ogImage"/>
                             </div>
                         </div>
                     </div>
