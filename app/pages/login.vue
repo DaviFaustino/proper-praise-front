@@ -2,6 +2,12 @@
 import { ref } from "vue";
 const { $api } = useNuxtApp();
 
+useHead({
+    meta: [
+        { name: 'robots', content: 'noindex' }
+    ]
+});
+
 const username = ref('');
 const password = ref('');
 
