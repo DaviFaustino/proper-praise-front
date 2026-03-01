@@ -4,6 +4,8 @@ import { marked } from 'marked';
 import ArticleEditingInputField from '~/components/ArticleEditingInputField.vue';
 import ArticleEditingInputTextarea from '~/components/ArticleEditingInputTextarea.vue';
 
+const { $api } = useNuxtApp();
+
 useHead({
     meta: [
         { name: 'robots', content: 'noindex' }
@@ -73,6 +75,49 @@ const isFormValid = computed(() => {
         isOgImageValid.value;
 });
 const validationFailed = ref(false);
+
+function saveArticle() {
+    if (!isFormValid.value) {
+        alert('Por favor, corrija os erros no formulário antes de salvar.');
+        validationFailed.value = true;
+        return;
+    }
+
+    createArticle();
+    validationFailed.value = false;
+}
+
+function createArticle() {
+    $api.post("/api/articles", {
+            title: title.value,
+            slug: slug.value,
+            content: markdownContent.value,
+            excerpt: excerpt.value,
+            seoMetadata: {
+                metaTitle: metaTitle.value,
+                metaDescription: metaDescription.value,
+                ogTitle: ogTitle.value,
+                ogDescription: ogDescription.value,
+                ogImageUrl: ogImage.value === '' ? null : ogImage.value
+            }
+        })
+        .then(() => {
+            alert('Artigo salvo com sucesso!');
+            title.value = '';
+            slug.value = '';
+            excerpt.value = '';
+            metaTitle.value = '';
+            metaDescription.value = '';
+            ogTitle.value = '';
+            ogDescription.value = '';
+            ogImage.value = '';
+            articleBody.value = '';
+        })
+        .catch(() => {
+            console.error("There was an error!");
+            alert('Ocorreu um erro ao salvar o artigo. Por favor, tente novamente.');
+        });
+}
 </script>
 
 <template>
@@ -143,7 +188,7 @@ const validationFailed = ref(false);
 
             <div class="flex w-full items-end justify-end mt-5">
                 <div class="flex p-3 bg-white shadow-lg">
-                    <button class="flex justify-center items-center sm:text-lg text-white h-7 sm:h-8 w-24 sm:w-28 mr-1 rounded-lg bg-[#5D00F5]">salvar</button>
+                    <button class="flex justify-center items-center sm:text-lg text-white h-7 sm:h-8 w-24 sm:w-28 mr-1 rounded-lg bg-[#5D00F5]" @click="saveArticle">salvar</button>
                     <button class="flex justify-center items-center sm:text-lg text-white h-7 sm:h-8 w-24 sm:w-28 mr-1 rounded-lg bg-[#5D00F5]">{{ true ? 'publicar': 'publicado' }}</button>
                     <button class="flex justify-center items-center sm:text-lg text-white h-7 sm:h-8 w-24 sm:w-28 mr-1 rounded-lg bg-[#5D00F5]">arquivar</button>
                 </div>
