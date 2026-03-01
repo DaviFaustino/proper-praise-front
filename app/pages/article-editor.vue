@@ -6,6 +6,10 @@ import ArticleEditingInputTextarea from '~/components/ArticleEditingInputTextare
 
 const { $api } = useNuxtApp();
 
+definePageMeta({
+    middleware: 'auth'
+});
+
 useHead({
     meta: [
         { name: 'robots', content: 'noindex' }
