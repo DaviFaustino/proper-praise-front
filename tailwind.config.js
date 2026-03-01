@@ -14,7 +14,11 @@ export default {
     'to-[#6200ed]','to-[#6b00de]','to-[#7500cf]','to-[#7e00c0]','to-[#8800b1]','to-[#9100a2]','to-[#9b0093]','to-[#a40084]',
     'to-[#ae0176]','to-[#b70167]','to-[#c10158]','to-[#ca0149]','to-[#d4013a]','to-[#dd012b]','to-[#e7011c]','to-[#f0010d]'],
   theme: {
-    extend: {},
+    extend: {
+      screens: {
+        'sm': '32rem',
+      },
+    },
   },
   plugins: [],
 }
