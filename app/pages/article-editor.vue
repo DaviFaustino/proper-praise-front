@@ -122,6 +122,64 @@ function createArticle() {
             alert('Ocorreu um erro ao salvar o artigo. Por favor, tente novamente.');
         });
 }
+
+const searchByDraftActivated = ref(false);
+function toggleSearchByDraft() {
+    searchByDraftActivated.value = !searchByDraftActivated.value;
+
+    requestArticleSuggestions();
+}
+
+const searchInput = ref('');
+const articleSuggestions = ref([]);
+const filteredArticleSuggestions = computed(() => {
+    return articleSuggestions.value.filter(suggestion =>
+        suggestion.title.toLowerCase().includes(searchInput.value.toLowerCase())
+    );
+});
+const inputFocused = ref(false);
+const showArticleSuggestions = computed(() => {
+    return (searchInput.value.length > 2 || searchByDraftActivated.value) && filteredArticleSuggestions.value.length > 0 && inputFocused.value;
+});
+
+function handleInputBlur() {
+    setTimeout(() => {inputFocused.value = false}, 250);
+}
+
+const lastArticleSuggestionsSearch = ref('');
+
+function onInputChange(event) {
+    if (event.target.value[0] === " ") {
+        searchInput.value = "";
+    } else {
+        searchInput.value = event.target.value;
+    }
+
+    if (searchInput.value.length > 2) {
+        let firstThreeLetters = searchInput.value.substring(0, 3);
+
+        if (firstThreeLetters.toLowerCase() !== lastArticleSuggestionsSearch.value.toLowerCase()) {
+            requestArticleSuggestions(firstThreeLetters);
+        }
+    }
+}
+
+function requestArticleSuggestions(firstThreeLetters) {
+    return $api.get('/api/articles/suggestions', {
+            params: {
+                onlyDraft: searchByDraftActivated.value,
+                titleFilter: firstThreeLetters
+            }
+        })
+        .then(response => {
+            lastArticleSuggestionsSearch.value = firstThreeLetters;
+            articleSuggestions.value = response.data;
+            articleSuggestions.value.sort((a, b) => a.title.localeCompare(b.title));
+        })
+        .catch(() => {
+            console.error('Error fetching article suggestions.');
+        });
+}
 </script>
 
 <template>
@@ -129,12 +187,22 @@ function createArticle() {
         <div class="mt-10 bg-white rounded-xl border-8 border-white text-2xl sm:text-3xl text-[#5D00F5] font-bold shadow-lg">Editor de Artigos</div>
 
         <div class="w-full p-8 sm:p-16 xl:p-10">
-            <div class="flex bg-white max-w-[30rem] p-3 space-x-3 shadow-lg">
-                <input type="text" class="border border-gray-300 rounded-md p-1 w-full text-sm sm:text-md focus:outline-none" placeholder="Buscar artigo por slug" />
-                <button class="flex justify-center items-center h-8 w-24 mr-1 rounded-lg bg-[#5D00F5]">
-                    <span class="sm:text-lg text-white">Buscar</span>
+            <div class="relative flex bg-white max-w-[30rem] p-3 space-x-3 shadow-lg">
+                <input v-if="!searchByDraftActivated" v-model="searchInput" @input="onInputChange($event)" @focus="inputFocused = true" @blur="handleInputBlur" type="text" class="border border-gray-300 rounded-md p-1 w-full text-sm sm:text-md focus:outline-none" placeholder="Buscar artigo por título" />
+                <button @click="toggleSearchByDraft" class="flex justify-center items-center h-8 mr-1 rounded-lg" :class="[ searchByDraftActivated ? 'w-full bg-[#a40084]': 'w-fit px-1 bg-[#5D00F5]' ]">
+                    <span v-if="!searchByDraftActivated" class="sm:text-lg text-white">Rascunhos</span>
+                    <span v-if="searchByDraftActivated" class="sm:text-lg text-white">Buscar por título</span>
                 </button>
+
+                <div v-if="showArticleSuggestions" class="absolute top-full left-0 w-fit max-h-44 overflow-y-auto mt-0.5 rounded-lg bg-[#5D00F5] text-white z-10">
+                    <ul class="mt-1">
+                        <li v-for="fas in filteredArticleSuggestions" :key="fas" :id="fas" class="hover:bg-white px-2 pr-5">
+                            <button type="button" class="w-full hover:text-[#5D00F5] text-left">{{ fas.title }}</button>
+                        </li>
+                    </ul>
+                </div>
             </div>
+
             <div class="flex flex-col xl:flex-row w-full mt-10 xl:space-x-5 space-y-10 xl:space-y-0">
                 <div id="principal" class="">
                     <div class="flex w-fit px-2 justify-center bg-white border-[#5D00F5] border-l-2 shadow-md">
