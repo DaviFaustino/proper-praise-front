@@ -66,7 +66,7 @@ const isOgDescriptionValid = computed(() => {
 const isOgImageValid = computed(() => {
     return ogImage.value === null ||
         ogImage.value === '' ||
-        (ogImage.value.length > 0 && ogImage.value.startsWith(useRuntimeConfig().public.backendPublicUrl));
+        (ogImage.value.length > 0 && ogImage.value.startsWith('https://kdlouvor.com/'));
 });
 const isFormValid = computed(() => {
     return isTitleValid.value &&
