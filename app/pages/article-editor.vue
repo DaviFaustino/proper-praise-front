@@ -180,6 +180,27 @@ function requestArticleSuggestions(firstThreeLetters) {
             console.error('Error fetching article suggestions.');
         });
 }
+
+function handleSuggestionClick(suggestion) {
+    searchInput.value = suggestion.title;
+
+    $api.get(`/api/articles/${suggestion.slug}`)
+        .then(response => {
+            const article = response.data;
+            title.value = article.title;
+            slug.value = article.slug;
+            excerpt.value = article.excerpt;
+            metaTitle.value = article.metaTitle;
+            metaDescription.value = article.metaDescription;
+            ogTitle.value = article.ogTitle;
+            ogDescription.value = article.ogDescription;
+            ogImage.value = article.ogImageUrl;
+            articleBody.value = article.content;
+        })
+        .catch(() => {
+            console.error('Error fetching article details.');
+        });
+}
 </script>
 
 <template>
@@ -197,7 +218,7 @@ function requestArticleSuggestions(firstThreeLetters) {
                 <div v-if="showArticleSuggestions" class="absolute top-full left-0 w-fit max-h-44 overflow-y-auto mt-0.5 rounded-lg bg-[#5D00F5] text-white z-10">
                     <ul class="mt-1">
                         <li v-for="fas in filteredArticleSuggestions" :key="fas" :id="fas" class="hover:bg-white px-2 pr-5">
-                            <button type="button" class="w-full hover:text-[#5D00F5] text-left">{{ fas.title }}</button>
+                            <button type="button" @click="handleSuggestionClick(fas)" class="w-full hover:text-[#5D00F5] text-left">{{ fas.title }}</button>
                         </li>
                     </ul>
                 </div>
