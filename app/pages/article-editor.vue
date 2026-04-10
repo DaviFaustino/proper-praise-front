@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed } from 'vue';
+import { computed, reactive, ref } from 'vue';
 import { marked } from 'marked';
 import ArticleEditingInputField from '~/components/ArticleEditingInputField.vue';
 import ArticleEditingInputTextarea from '~/components/ArticleEditingInputTextarea.vue';
@@ -16,18 +16,6 @@ useHead({
     ]
 });
 
-const title = ref('');
-const slug = ref('');
-const excerpt = ref('');
-const metaTitle = ref('');
-const metaDescription = ref('');
-const ogTitle = ref('');
-const ogDescription = ref('');
-const ogImage = ref('');
-
-const articleBody = ref('');
-const markdownContent = ref('');
-
 const date = new Date(Date.now());
 const formattedDate = date.toLocaleDateString('pt-BR', {
     day: '2-digit',
@@ -36,37 +24,114 @@ const formattedDate = date.toLocaleDateString('pt-BR', {
 });
 const publicationMessage = `Publicado em ${formattedDate}`;
 
-const renderedArticle = computed(() => {
-    markdownContent.value = `# ${title.value}\n\n<div class="publication-date">publicationMessage</div>\n\n${articleBody.value}`;
-    return marked(markdownContent.value.replace('publicationMessage', publicationMessage));
-})
+function createEmptyArticle() {
+    return {
+        title: '',
+        slug: '',
+        excerpt: '',
+        metaTitle: '',
+        metaDescription: '',
+        ogTitle: '',
+        ogDescription: '',
+        ogImage: '',
+        body: ''
+    };
+}
+
+function normalizeArticleValue(value) {
+    return value == null ? '' : String(value);
+}
+
+function extractArticleBody(content, title) {
+    let parsedContent = normalizeArticleValue(content).replace(/\r\n/g, '\n');
+    const heading = `# ${normalizeArticleValue(title)}`;
+
+    if (normalizeArticleValue(title) && parsedContent.startsWith(heading)) {
+        parsedContent = parsedContent.slice(heading.length);
+    }
+
+    parsedContent = parsedContent.replace(/^\n+/, '');
+    parsedContent = parsedContent.replace(/^<div class="publication-date">.*?<\/div>\n*/s, '');
+
+    return parsedContent.replace(/^\n+/, '');
+}
+
+const Article = {
+    create(data = {}) {
+        return {
+            ...createEmptyArticle(),
+            ...data
+        };
+    },
+    assign(target, source = {}) {
+        Object.assign(target, Article.create(source));
+        return target;
+    },
+    reset(target) {
+        Article.assign(target, createEmptyArticle());
+    },
+    fromApi(article = {}) {
+        return Article.create({
+            title: normalizeArticleValue(article.title),
+            slug: normalizeArticleValue(article.slug),
+            excerpt: normalizeArticleValue(article.excerpt),
+            metaTitle: normalizeArticleValue(article.metaTitle ?? article.seoMetadata?.metaTitle),
+            metaDescription: normalizeArticleValue(article.metaDescription ?? article.seoMetadata?.metaDescription),
+            ogTitle: normalizeArticleValue(article.ogTitle ?? article.seoMetadata?.ogTitle),
+            ogDescription: normalizeArticleValue(article.ogDescription ?? article.seoMetadata?.ogDescription),
+            ogImage: normalizeArticleValue(article.ogImageUrl ?? article.seoMetadata?.ogImageUrl),
+            body: extractArticleBody(article.content, article.title)
+        });
+    },
+    buildContent(article) {
+        return `# ${normalizeArticleValue(article.title)}\n\n<div class="publication-date">${publicationMessage}</div>\n\n${normalizeArticleValue(article.body)}`;
+    },
+    toPayload(article) {
+        return {
+            title: normalizeArticleValue(article.title),
+            slug: normalizeArticleValue(article.slug),
+            content: Article.buildContent(article),
+            excerpt: normalizeArticleValue(article.excerpt),
+            seoMetadata: {
+                metaTitle: normalizeArticleValue(article.metaTitle),
+                metaDescription: normalizeArticleValue(article.metaDescription),
+                ogTitle: normalizeArticleValue(article.ogTitle),
+                ogDescription: normalizeArticleValue(article.ogDescription),
+                ogImageUrl: normalizeArticleValue(article.ogImage) === '' ? null : normalizeArticleValue(article.ogImage)
+            }
+        };
+    }
+};
+
+const currentArticle = reactive(Article.create());
+
+const validationFailed = ref(false);
 
 const isTitleValid = computed(() => {
-    return title.value.length <= 160 && title.value.length > 0;
+    return currentArticle.title.length <= 160 && currentArticle.title.length > 0;
 });
 const isSlugValid = computed(() => {
     const slugRegex = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
-    return slugRegex.test(slug.value) && slug.value.length <= 100 && slug.value.length > 0;
+    return slugRegex.test(currentArticle.slug) && currentArticle.slug.length <= 100 && currentArticle.slug.length > 0;
 });
 const isExcerptValid = computed(() => {
-    return excerpt.value.length <= 300;
+    return currentArticle.excerpt.length <= 300;
 });
 const isMetaTitleValid = computed(() => {
-    return metaTitle.value.length <= 60;
+    return currentArticle.metaTitle.length <= 60;
 });
 const isMetaDescriptionValid = computed(() => {
-    return metaDescription.value.length <= 160;
+    return currentArticle.metaDescription.length <= 160;
 });
 const isOgTitleValid = computed(() => {
-    return ogTitle.value.length <= 60;
+    return currentArticle.ogTitle.length <= 60;
 });
 const isOgDescriptionValid = computed(() => {
-    return ogDescription.value.length <= 160;
+    return currentArticle.ogDescription.length <= 160;
 });
 const isOgImageValid = computed(() => {
-    return ogImage.value === null ||
-        ogImage.value === '' ||
-        (ogImage.value.length > 0 && ogImage.value.startsWith('https://kdlouvor.com/'));
+    return currentArticle.ogImage === '' ||
+        (currentArticle.ogImage.length > 0 && currentArticle.ogImage.startsWith('https://kdlouvor.com/'));
 });
 const isFormValid = computed(() => {
     return isTitleValid.value &&
@@ -78,66 +143,54 @@ const isFormValid = computed(() => {
         isOgDescriptionValid.value &&
         isOgImageValid.value;
 });
-const validationFailed = ref(false);
+const renderedArticle = computed(() => {
+    return marked(Article.buildContent(currentArticle));
+});
 
-function saveArticle() {
+async function saveArticle() {
     if (!isFormValid.value) {
         alert('Por favor, corrija os erros no formulário antes de salvar.');
         validationFailed.value = true;
         return;
     }
 
-    createArticle();
     validationFailed.value = false;
+
+    try {
+        await createArticle();
+    } catch (error) {
+        console.error('There was an error!', error);
+        alert('Ocorreu um erro ao salvar o artigo. Por favor, tente novamente.');
+    }
 }
 
-function createArticle() {
-    $api.post("/api/articles", {
-            title: title.value,
-            slug: slug.value,
-            content: markdownContent.value,
-            excerpt: excerpt.value,
-            seoMetadata: {
-                metaTitle: metaTitle.value,
-                metaDescription: metaDescription.value,
-                ogTitle: ogTitle.value,
-                ogDescription: ogDescription.value,
-                ogImageUrl: ogImage.value === '' ? null : ogImage.value
-            }
-        })
-        .then(() => {
-            alert('Artigo salvo com sucesso!');
-            title.value = '';
-            slug.value = '';
-            excerpt.value = '';
-            metaTitle.value = '';
-            metaDescription.value = '';
-            ogTitle.value = '';
-            ogDescription.value = '';
-            ogImage.value = '';
-            articleBody.value = '';
-        })
-        .catch(() => {
-            console.error("There was an error!");
-            alert('Ocorreu um erro ao salvar o artigo. Por favor, tente novamente.');
-        });
+async function createArticle() {
+    await $api.post('/api/articles', Article.toPayload(currentArticle));
+
+    alert('Artigo salvo com sucesso!');
+    Article.reset(currentArticle);
 }
 
 const searchByDraftActivated = ref(false);
 function toggleSearchByDraft() {
     searchByDraftActivated.value = !searchByDraftActivated.value;
 
-    requestArticleSuggestions();
+    if (searchByDraftActivated.value) {
+        requestArticleSuggestions();
+        inputFocused.value = true;
+    }
 }
 
 const searchInput = ref('');
 const articleSuggestions = ref([]);
+const inputFocused = ref(false);
+const lastArticleSuggestionsSearch = ref('');
+
 const filteredArticleSuggestions = computed(() => {
     return articleSuggestions.value.filter(suggestion =>
         String(suggestion.title).toLowerCase().includes(searchInput.value.toLowerCase())
     );
 });
-const inputFocused = ref(false);
 const showArticleSuggestions = computed(() => {
     return (searchInput.value.length > 2 || searchByDraftActivated.value) && filteredArticleSuggestions.value.length > 0 && inputFocused.value;
 });
@@ -145,8 +198,6 @@ const showArticleSuggestions = computed(() => {
 function handleInputBlur() {
     setTimeout(() => {inputFocused.value = false}, 250);
 }
-
-const lastArticleSuggestionsSearch = ref('');
 
 function onInputChange(event) {
     if (event.target.value[0] === " ") {
@@ -156,7 +207,7 @@ function onInputChange(event) {
     }
 
     if (searchInput.value.length > 2) {
-        let firstThreeLetters = searchInput.value.substring(0, 3);
+        const firstThreeLetters = searchInput.value.substring(0, 3);
 
         if (firstThreeLetters.toLowerCase() !== String(lastArticleSuggestionsSearch.value).toLowerCase()) {
             requestArticleSuggestions(firstThreeLetters);
@@ -183,19 +234,13 @@ function requestArticleSuggestions(firstThreeLetters) {
 
 function handleSuggestionClick(suggestion) {
     searchInput.value = suggestion.title;
+    inputFocused.value = false;
 
     $api.get(`/api/articles/${suggestion.slug}`)
         .then(response => {
-            const article = response.data;
-            title.value = article.title;
-            slug.value = article.slug;
-            excerpt.value = article.excerpt;
-            metaTitle.value = article.metaTitle;
-            metaDescription.value = article.metaDescription;
-            ogTitle.value = article.ogTitle;
-            ogDescription.value = article.ogDescription;
-            ogImage.value = article.ogImageUrl;
-            articleBody.value = article.content;
+            const fetchedArticle = Article.fromApi(response.data);
+
+            Article.assign(currentArticle, fetchedArticle);
         })
         .catch(() => {
             console.error('Error fetching article details.');
@@ -232,11 +277,11 @@ function handleSuggestionClick(suggestion) {
                     <div class="max-w-full sm:w-[26rem] h-fit bg-white shadow-md mt-2 p-4">
                         <div class="flex flex-col space-y-2">
                             <ArticleEditingInputField label="Título" placeholder="Digite o título do artigo"
-                                :validationFailed="validationFailed" :isValueValid="isTitleValid" v-model="title"/>
+                                :validationFailed="validationFailed" :isValueValid="isTitleValid" v-model="currentArticle.title"/>
                             <ArticleEditingInputField label="Slug" placeholder="Digite o slug do artigo"
-                                :validationFailed="validationFailed" :isValueValid="isSlugValid" v-model="slug"/>
+                                :validationFailed="validationFailed" :isValueValid="isSlugValid" v-model="currentArticle.slug"/>
                             <ArticleEditingInputTextarea label="Trecho" placeholder="Digite o trecho do artigo"
-                                :validationFailed="validationFailed" :isValueValid="isExcerptValid" v-model="excerpt"/>
+                                :validationFailed="validationFailed" :isValueValid="isExcerptValid" v-model="currentArticle.excerpt"/>
                         </div>
                     </div>
                 </div>
@@ -248,17 +293,17 @@ function handleSuggestionClick(suggestion) {
                         <div class="flex flex-col lg:flex-row w-full space-y-2 lg:space-y-0 lg:space-x-2">
                             <div class="w-full space-y-2">
                                 <ArticleEditingInputField label="meta title" placeholder="Digite o meta título do artigo"
-                                    :validationFailed="validationFailed" :isValueValid="isMetaTitleValid" v-model="metaTitle"/>
+                                    :validationFailed="validationFailed" :isValueValid="isMetaTitleValid" v-model="currentArticle.metaTitle"/>
                                 <ArticleEditingInputTextarea label="meta description" placeholder="Digite a meta descrição do artigo"
-                                    :validationFailed="validationFailed" :isValueValid="isMetaDescriptionValid" v-model="metaDescription"/>
+                                    :validationFailed="validationFailed" :isValueValid="isMetaDescriptionValid" v-model="currentArticle.metaDescription"/>
                             </div>
                             <div class="w-full space-y-2">
                                 <ArticleEditingInputField label="og title" placeholder="Digite o og title do artigo"
-                                    :validationFailed="validationFailed" :isValueValid="isOgTitleValid" v-model="ogTitle"/>
+                                    :validationFailed="validationFailed" :isValueValid="isOgTitleValid" v-model="currentArticle.ogTitle"/>
                                 <ArticleEditingInputTextarea label="og description" placeholder="Digite o og description do artigo"
-                                    :validationFailed="validationFailed" :isValueValid="isOgDescriptionValid" v-model="ogDescription"/>
+                                    :validationFailed="validationFailed" :isValueValid="isOgDescriptionValid" v-model="currentArticle.ogDescription"/>
                                 <ArticleEditingInputField label="og image" placeholder="Digite o og image do artigo"
-                                    :validationFailed="validationFailed" :isValueValid="isOgImageValid" v-model="ogImage"/>
+                                    :validationFailed="validationFailed" :isValueValid="isOgImageValid" v-model="currentArticle.ogImage"/>
                             </div>
                         </div>
                     </div>
@@ -271,7 +316,10 @@ function handleSuggestionClick(suggestion) {
             <div class="flex flex-col lg:flex-row w-full mt-5 lg:space-x-10 space-y-10 lg:space-y-0">
                 <div class="flex flex-col w-full">
                     <label class="w-20 text-center text-sm sm:text-md bg-white">markdown</label>
-                    <textarea class="w-full h-[30rem] p-2 text-sm sm:text-md shadow-xl resize-none focus:outline-none" v-model="articleBody"></textarea>
+                    <textarea
+                        class="w-full h-[30rem] p-2 text-sm sm:text-md shadow-xl resize-none focus:outline-none disabled:bg-gray-100 disabled:text-gray-500 disabled:cursor-not-allowed"
+                        v-model="currentArticle.body"
+                    ></textarea>
                 </div>
                 <div class="flex flex-col w-full">
                     <label class="w-12 text-center text-sm sm:text-md bg-white">html</label>
