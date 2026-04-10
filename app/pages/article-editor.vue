@@ -134,7 +134,7 @@ const searchInput = ref('');
 const articleSuggestions = ref([]);
 const filteredArticleSuggestions = computed(() => {
     return articleSuggestions.value.filter(suggestion =>
-        suggestion.title.toLowerCase().includes(searchInput.value.toLowerCase())
+        String(suggestion.title).toLowerCase().includes(searchInput.value.toLowerCase())
     );
 });
 const inputFocused = ref(false);
@@ -158,7 +158,7 @@ function onInputChange(event) {
     if (searchInput.value.length > 2) {
         let firstThreeLetters = searchInput.value.substring(0, 3);
 
-        if (firstThreeLetters.toLowerCase() !== lastArticleSuggestionsSearch.value.toLowerCase()) {
+        if (firstThreeLetters.toLowerCase() !== String(lastArticleSuggestionsSearch.value).toLowerCase()) {
             requestArticleSuggestions(firstThreeLetters);
         }
     }
