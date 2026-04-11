@@ -138,6 +138,7 @@ const updateModeArticle = reactive(Article.create());
 
 const editorMode = ref('new');
 const validationFailed = ref(false);
+const isSaving = ref(false);
 const isUpdateEditingEnabled = ref(false);
 
 const isTitleValid = computed(() => {
@@ -229,15 +230,30 @@ async function saveArticle() {
         return;
     }
 
+    if (editorMode.value === 'update' && !hasFetchedUpdateArticle.value) {
+        alert('Selecione um artigo antes de tentar atualizar.');
+        return;
+    }
+
+    if (editorMode.value === 'update' && !isUpdateEditingEnabled.value) {
+        alert('Habilite a edição para salvar a atualização do artigo.');
+        return;
+    }
+
     validationFailed.value = false;
+    isSaving.value = true;
 
     try {
         if (editorMode.value === 'new') {
             await createArticle();
+        } else {
+            await updateArticle();
         }
     } catch (error) {
         console.error('There was an error!', error);
         alert('Ocorreu um erro ao salvar o artigo. Por favor, tente novamente.');
+    } finally {
+        isSaving.value = false;
     }
 }
 
@@ -247,6 +263,31 @@ async function createArticle() {
     alert('Artigo salvo com sucesso!');
     Article.reset(currentArticle);
     Article.reset(newModeArticle);
+}
+
+async function updateArticle() {
+    const originalSlug = normalizeArticleValue(originalUpdateArticle.slug);
+
+    if (!originalSlug) {
+        alert('Selecione um artigo antes de tentar atualizar.');
+        return;
+    }
+
+    const changedFields = Article.diff(originalUpdateArticle, currentArticle);
+
+    if (Object.keys(changedFields).length === 0) {
+        alert('Nenhuma alteração foi encontrada para atualizar.');
+        isUpdateEditingEnabled.value = false;
+        return;
+    }
+
+    await $api.put(`/api/articles/${originalSlug}`, changedFields);
+
+    alert('Artigo atualizado com sucesso!');
+    Article.assign(originalUpdateArticle, currentArticle);
+    Article.assign(updateModeArticle, currentArticle);
+    isUpdateEditingEnabled.value = false;
+    searchInput.value = currentArticle.title;
 }
 
 function enableUpdateEditing() {
@@ -480,7 +521,9 @@ function handleSuggestionClick(suggestion) {
 
             <div class="flex w-full items-end justify-end mt-5">
                 <div class="flex p-3 bg-white shadow-lg">
-                    <button class="flex justify-center items-center sm:text-lg text-white h-7 sm:h-8 w-24 sm:w-28 mr-1 rounded-lg bg-[#5D00F5]" @click="saveArticle">salvar</button>
+                    <button class="flex justify-center items-center sm:text-lg text-white h-7 sm:h-8 w-24 sm:w-28 mr-1 rounded-lg bg-[#5D00F5] disabled:bg-[#cbb4ff]" :disabled="isSaving" @click="saveArticle">
+                        {{ isSaving ? 'salvando' : 'salvar' }}
+                    </button>
                     <button class="flex justify-center items-center sm:text-lg text-white h-7 sm:h-8 w-24 sm:w-28 mr-1 rounded-lg bg-[#5D00F5]">{{ true ? 'publicar': 'publicado' }}</button>
                     <button class="flex justify-center items-center sm:text-lg text-white h-7 sm:h-8 w-24 sm:w-28 mr-1 rounded-lg bg-[#5D00F5]">arquivar</button>
                 </div>
