@@ -70,6 +70,9 @@ const Article = {
     reset(target) {
         Article.assign(target, createEmptyArticle());
     },
+    hasData(article) {
+        return Object.values(article).some(value => normalizeArticleValue(value).trim().length > 0);
+    },
     fromApi(article = {}) {
         return Article.create({
             title: normalizeArticleValue(article.title),
@@ -100,12 +103,42 @@ const Article = {
                 ogImageUrl: normalizeArticleValue(article.ogImage) === '' ? null : normalizeArticleValue(article.ogImage)
             }
         };
+    },
+    diff(originalArticle, updatedArticle) {
+        const originalPayload = Article.toPayload(originalArticle);
+        const updatedPayload = Article.toPayload(updatedArticle);
+        const changedFields = {};
+
+        for (const key of ['title', 'slug', 'content', 'excerpt']) {
+            if (originalPayload[key] !== updatedPayload[key]) {
+                changedFields[key] = updatedPayload[key];
+            }
+        }
+
+        const changedSeoMetadata = {};
+
+        for (const key of ['metaTitle', 'metaDescription', 'ogTitle', 'ogDescription', 'ogImageUrl']) {
+            if (originalPayload.seoMetadata[key] !== updatedPayload.seoMetadata[key]) {
+                changedSeoMetadata[key] = updatedPayload.seoMetadata[key];
+            }
+        }
+
+        if (Object.keys(changedSeoMetadata).length > 0) {
+            changedFields.seoMetadata = changedSeoMetadata;
+        }
+
+        return changedFields;
     }
 };
 
 const currentArticle = reactive(Article.create());
+const newModeArticle = reactive(Article.create());
+const originalUpdateArticle = reactive(Article.create());
+const updateModeArticle = reactive(Article.create());
 
+const editorMode = ref('new');
 const validationFailed = ref(false);
+const isUpdateEditingEnabled = ref(false);
 
 const isTitleValid = computed(() => {
     return currentArticle.title.length <= 160 && currentArticle.title.length > 0;
@@ -147,6 +180,48 @@ const renderedArticle = computed(() => {
     return marked(Article.buildContent(currentArticle));
 });
 
+const hasFetchedUpdateArticle = computed(() => {
+    return originalUpdateArticle.slug.length > 0;
+});
+const isCurrentArticleReadOnly = computed(() => {
+    return editorMode.value === 'update' && !isUpdateEditingEnabled.value;
+});
+
+function syncCurrentArticleWithMode() {
+    if (editorMode.value === 'new') {
+        Article.assign(currentArticle, newModeArticle);
+        return;
+    }
+
+    if (Article.hasData(updateModeArticle)) {
+        Article.assign(currentArticle, updateModeArticle);
+        return;
+    }
+
+    Article.assign(currentArticle, originalUpdateArticle);
+}
+
+function storeCurrentModeState() {
+    if (editorMode.value === 'new') {
+        Article.assign(newModeArticle, currentArticle);
+        return;
+    }
+
+    Article.assign(updateModeArticle, currentArticle);
+}
+
+function setEditorMode(nextMode) {
+    if (nextMode === editorMode.value) {
+        return;
+    }
+
+    storeCurrentModeState();
+    editorMode.value = nextMode;
+    validationFailed.value = false;
+    isUpdateEditingEnabled.value = false;
+    syncCurrentArticleWithMode();
+}
+
 async function saveArticle() {
     if (!isFormValid.value) {
         alert('Por favor, corrija os erros no formulário antes de salvar.');
@@ -157,7 +232,9 @@ async function saveArticle() {
     validationFailed.value = false;
 
     try {
-        await createArticle();
+        if (editorMode.value === 'new') {
+            await createArticle();
+        }
     } catch (error) {
         console.error('There was an error!', error);
         alert('Ocorreu um erro ao salvar o artigo. Por favor, tente novamente.');
@@ -169,18 +246,18 @@ async function createArticle() {
 
     alert('Artigo salvo com sucesso!');
     Article.reset(currentArticle);
+    Article.reset(newModeArticle);
+}
+
+function enableUpdateEditing() {
+    if (!hasFetchedUpdateArticle.value) {
+        return;
+    }
+
+    isUpdateEditingEnabled.value = true;
 }
 
 const searchByDraftActivated = ref(false);
-function toggleSearchByDraft() {
-    searchByDraftActivated.value = !searchByDraftActivated.value;
-
-    if (searchByDraftActivated.value) {
-        requestArticleSuggestions();
-        inputFocused.value = true;
-    }
-}
-
 const searchInput = ref('');
 const articleSuggestions = ref([]);
 const inputFocused = ref(false);
@@ -188,38 +265,54 @@ const lastArticleSuggestionsSearch = ref('');
 
 const filteredArticleSuggestions = computed(() => {
     return articleSuggestions.value.filter(suggestion =>
-        String(suggestion.title).toLowerCase().includes(searchInput.value.toLowerCase())
+        suggestion.title.toLowerCase().includes(searchInput.value.toLowerCase())
     );
 });
 const showArticleSuggestions = computed(() => {
-    return (searchInput.value.length > 2 || searchByDraftActivated.value) && filteredArticleSuggestions.value.length > 0 && inputFocused.value;
+    return (searchInput.value.length > 2 || searchByDraftActivated.value) &&
+        filteredArticleSuggestions.value.length > 0 &&
+        inputFocused.value;
 });
 
+function toggleSearchByDraft() {
+    searchByDraftActivated.value = !searchByDraftActivated.value;
+    inputFocused.value = searchByDraftActivated.value;
+    lastArticleSuggestionsSearch.value = '';
+
+    if (searchByDraftActivated.value) {
+        requestArticleSuggestions(searchInput.value.substring(0, 3));
+    }
+}
+
 function handleInputBlur() {
-    setTimeout(() => {inputFocused.value = false}, 250);
+    setTimeout(() => {
+        inputFocused.value = false;
+    }, 250);
 }
 
 function onInputChange(event) {
-    if (event.target.value[0] === " ") {
-        searchInput.value = "";
+    const nextValue = event.target.value ?? '';
+
+    if (nextValue.startsWith(' ')) {
+        searchInput.value = '';
     } else {
-        searchInput.value = event.target.value;
+        searchInput.value = nextValue;
     }
 
     if (searchInput.value.length > 2) {
         const firstThreeLetters = searchInput.value.substring(0, 3);
 
-        if (firstThreeLetters.toLowerCase() !== String(lastArticleSuggestionsSearch.value).toLowerCase()) {
+        if (firstThreeLetters.toLowerCase() !== lastArticleSuggestionsSearch.value.toLowerCase()) {
             requestArticleSuggestions(firstThreeLetters);
         }
     }
 }
 
-function requestArticleSuggestions(firstThreeLetters) {
+function requestArticleSuggestions(firstThreeLetters = '') {
     return $api.get('/api/articles/suggestions', {
             params: {
                 onlyDraft: searchByDraftActivated.value,
-                titleFilter: firstThreeLetters
+                titleFilter: firstThreeLetters || undefined
             }
         })
         .then(response => {
@@ -235,12 +328,18 @@ function requestArticleSuggestions(firstThreeLetters) {
 function handleSuggestionClick(suggestion) {
     searchInput.value = suggestion.title;
     inputFocused.value = false;
+    isUpdateEditingEnabled.value = false;
 
     $api.get(`/api/articles/${suggestion.slug}`)
         .then(response => {
             const fetchedArticle = Article.fromApi(response.data);
 
-            Article.assign(currentArticle, fetchedArticle);
+            Article.assign(originalUpdateArticle, fetchedArticle);
+            Article.assign(updateModeArticle, fetchedArticle);
+
+            if (editorMode.value === 'update') {
+                Article.assign(currentArticle, fetchedArticle);
+            }
         })
         .catch(() => {
             console.error('Error fetching article details.');
@@ -253,19 +352,70 @@ function handleSuggestionClick(suggestion) {
         <div class="mt-10 bg-white rounded-xl border-8 border-white text-2xl sm:text-3xl text-[#5D00F5] font-bold shadow-lg">Editor de Artigos</div>
 
         <div class="w-full p-8 sm:p-16 xl:p-10">
-            <div class="relative flex bg-white max-w-[30rem] p-3 space-x-3 shadow-lg">
-                <input v-if="!searchByDraftActivated" v-model="searchInput" @input="onInputChange($event)" @focus="inputFocused = true" @blur="handleInputBlur" type="text" class="border border-gray-300 rounded-md p-1 w-full text-sm sm:text-md focus:outline-none" placeholder="Buscar artigo por título" />
-                <button @click="toggleSearchByDraft" class="flex justify-center items-center h-8 mr-1 rounded-lg" :class="[ searchByDraftActivated ? 'w-full bg-[#a40084]': 'w-fit px-1 bg-[#5D00F5]' ]">
-                    <span v-if="!searchByDraftActivated" class="sm:text-lg text-white">Rascunhos</span>
-                    <span v-if="searchByDraftActivated" class="sm:text-lg text-white">Buscar por título</span>
-                </button>
+            <div class="flex flex-col gap-6">
+                <div class="flex w-fit items-center rounded-full bg-white p-1 shadow-lg">
+                    <button
+                        type="button"
+                        class="rounded-full px-5 py-2 text-sm font-bold sm:text-base"
+                        :class="editorMode === 'new' ? 'bg-[#5D00F5] text-white' : 'text-[#5D00F5]'"
+                        @click="setEditorMode('new')"
+                    >
+                        Novo artigo
+                    </button>
+                    <button
+                        type="button"
+                        class="rounded-full px-5 py-2 text-sm font-bold sm:text-base"
+                        :class="editorMode === 'update' ? 'bg-[#a40084] text-white' : 'text-[#a40084]'"
+                        @click="setEditorMode('update')"
+                    >
+                        Atualizar artigo
+                    </button>
+                </div>
 
-                <div v-if="showArticleSuggestions" class="absolute top-full left-0 w-fit max-h-44 overflow-y-auto mt-0.5 rounded-lg bg-[#5D00F5] text-white z-10">
-                    <ul class="mt-1">
-                        <li v-for="fas in filteredArticleSuggestions" :key="fas" :id="fas" class="hover:bg-white px-2 pr-5">
-                            <button type="button" @click="handleSuggestionClick(fas)" class="w-full hover:text-[#5D00F5] text-left">{{ fas.title }}</button>
-                        </li>
-                    </ul>
+                <div v-if="editorMode === 'update'" class="flex flex-col gap-3">
+                    <div class="relative flex bg-white max-w-[30rem] p-3 space-x-3 shadow-lg">
+                        <input
+                            v-if="!searchByDraftActivated"
+                            v-model="searchInput"
+                            @input="onInputChange($event)"
+                            @focus="inputFocused = true"
+                            @blur="handleInputBlur"
+                            type="text"
+                            class="border border-gray-300 rounded-md p-1 w-full text-sm sm:text-md focus:outline-none"
+                            placeholder="Buscar artigo por título"
+                        />
+                        <button
+                            type="button"
+                            @click="toggleSearchByDraft"
+                            class="flex justify-center items-center h-8 mr-1 rounded-lg"
+                            :class="[ searchByDraftActivated ? 'w-full bg-[#a40084]': 'w-fit px-1 bg-[#5D00F5]' ]"
+                        >
+                            <span v-if="!searchByDraftActivated" class="sm:text-lg text-white">Rascunhos</span>
+                            <span v-if="searchByDraftActivated" class="sm:text-lg text-white">Buscar por título</span>
+                        </button>
+
+                        <div v-if="showArticleSuggestions" class="absolute top-full left-0 w-fit max-h-44 overflow-y-auto mt-0.5 rounded-lg bg-[#5D00F5] text-white z-10">
+                            <ul class="mt-1">
+                                <li v-for="suggestion in filteredArticleSuggestions" :key="suggestion.slug" class="hover:bg-white px-2 pr-5">
+                                    <button type="button" @click="handleSuggestionClick(suggestion)" class="w-full hover:text-[#5D00F5] text-left">
+                                        {{ suggestion.title }}
+                                    </button>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="size-fit bg-white rounded-2xl">
+                        <button
+                            type="button"
+                            class="flex justify-center items-center border-2 border-[#a40084] text-sm sm:text-[1rem] h-8 w-fit px-4 rounded-2xl transition-colors"
+                            :class="isUpdateEditingEnabled ? 'bg-white text-[#a40084]' : 'bg-[#a40084] text-white disabled:opacity-40'"
+                            :disabled="!hasFetchedUpdateArticle || isUpdateEditingEnabled"
+                            @click="enableUpdateEditing"
+                        >
+                            {{ isUpdateEditingEnabled ? 'habilitado' : 'habilitar edição' }}
+                        </button>
+                    </div>
                 </div>
             </div>
 
@@ -277,11 +427,11 @@ function handleSuggestionClick(suggestion) {
                     <div class="max-w-full sm:w-[26rem] h-fit bg-white shadow-md mt-2 p-4">
                         <div class="flex flex-col space-y-2">
                             <ArticleEditingInputField label="Título" placeholder="Digite o título do artigo"
-                                :validationFailed="validationFailed" :isValueValid="isTitleValid" v-model="currentArticle.title"/>
+                                :validationFailed="validationFailed" :isValueValid="isTitleValid" :disabled="isCurrentArticleReadOnly" v-model="currentArticle.title"/>
                             <ArticleEditingInputField label="Slug" placeholder="Digite o slug do artigo"
-                                :validationFailed="validationFailed" :isValueValid="isSlugValid" v-model="currentArticle.slug"/>
+                                :validationFailed="validationFailed" :isValueValid="isSlugValid" :disabled="isCurrentArticleReadOnly" v-model="currentArticle.slug"/>
                             <ArticleEditingInputTextarea label="Trecho" placeholder="Digite o trecho do artigo"
-                                :validationFailed="validationFailed" :isValueValid="isExcerptValid" v-model="currentArticle.excerpt"/>
+                                :validationFailed="validationFailed" :isValueValid="isExcerptValid" :disabled="isCurrentArticleReadOnly" v-model="currentArticle.excerpt"/>
                         </div>
                     </div>
                 </div>
@@ -293,17 +443,17 @@ function handleSuggestionClick(suggestion) {
                         <div class="flex flex-col lg:flex-row w-full space-y-2 lg:space-y-0 lg:space-x-2">
                             <div class="w-full space-y-2">
                                 <ArticleEditingInputField label="meta title" placeholder="Digite o meta título do artigo"
-                                    :validationFailed="validationFailed" :isValueValid="isMetaTitleValid" v-model="currentArticle.metaTitle"/>
+                                    :validationFailed="validationFailed" :isValueValid="isMetaTitleValid" :disabled="isCurrentArticleReadOnly" v-model="currentArticle.metaTitle"/>
                                 <ArticleEditingInputTextarea label="meta description" placeholder="Digite a meta descrição do artigo"
-                                    :validationFailed="validationFailed" :isValueValid="isMetaDescriptionValid" v-model="currentArticle.metaDescription"/>
+                                    :validationFailed="validationFailed" :isValueValid="isMetaDescriptionValid" :disabled="isCurrentArticleReadOnly" v-model="currentArticle.metaDescription"/>
                             </div>
                             <div class="w-full space-y-2">
                                 <ArticleEditingInputField label="og title" placeholder="Digite o og title do artigo"
-                                    :validationFailed="validationFailed" :isValueValid="isOgTitleValid" v-model="currentArticle.ogTitle"/>
+                                    :validationFailed="validationFailed" :isValueValid="isOgTitleValid" :disabled="isCurrentArticleReadOnly" v-model="currentArticle.ogTitle"/>
                                 <ArticleEditingInputTextarea label="og description" placeholder="Digite o og description do artigo"
-                                    :validationFailed="validationFailed" :isValueValid="isOgDescriptionValid" v-model="currentArticle.ogDescription"/>
+                                    :validationFailed="validationFailed" :isValueValid="isOgDescriptionValid" :disabled="isCurrentArticleReadOnly" v-model="currentArticle.ogDescription"/>
                                 <ArticleEditingInputField label="og image" placeholder="Digite o og image do artigo"
-                                    :validationFailed="validationFailed" :isValueValid="isOgImageValid" v-model="currentArticle.ogImage"/>
+                                    :validationFailed="validationFailed" :isValueValid="isOgImageValid" :disabled="isCurrentArticleReadOnly" v-model="currentArticle.ogImage"/>
                             </div>
                         </div>
                     </div>
@@ -318,6 +468,7 @@ function handleSuggestionClick(suggestion) {
                     <label class="w-20 text-center text-sm sm:text-md bg-white">markdown</label>
                     <textarea
                         class="w-full h-[30rem] p-2 text-sm sm:text-md shadow-xl resize-none focus:outline-none disabled:bg-gray-100 disabled:text-gray-500 disabled:cursor-not-allowed"
+                        :disabled="isCurrentArticleReadOnly"
                         v-model="currentArticle.body"
                     ></textarea>
                 </div>
