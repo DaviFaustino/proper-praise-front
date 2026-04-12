@@ -371,7 +371,7 @@ function handleSuggestionClick(suggestion) {
     inputFocused.value = false;
     isUpdateEditingEnabled.value = false;
 
-    $api.get(`/api/articles/${suggestion.slug}`)
+    $api.get(`/api/articles/${suggestion.slug}/preview`)
         .then(response => {
             const fetchedArticle = Article.fromApi(response.data);
 
