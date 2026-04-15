@@ -34,7 +34,8 @@ function createEmptyArticle() {
         ogTitle: '',
         ogDescription: '',
         ogImage: '',
-        body: ''
+        body: '',
+        status: ''
     };
 }
 
@@ -83,7 +84,8 @@ const Article = {
             ogTitle: normalizeArticleValue(article.ogTitle ?? article.seoMetadata?.ogTitle),
             ogDescription: normalizeArticleValue(article.ogDescription ?? article.seoMetadata?.ogDescription),
             ogImage: normalizeArticleValue(article.ogImageUrl ?? article.seoMetadata?.ogImageUrl),
-            body: extractArticleBody(article.content, article.title)
+            body: extractArticleBody(article.content, article.title),
+            status: normalizeArticleValue(article.status)
         });
     },
     buildContent(article) {
@@ -139,6 +141,8 @@ const updateModeArticle = reactive(Article.create());
 const editorMode = ref('new');
 const validationFailed = ref(false);
 const isSaving = ref(false);
+const isPublishing = ref(false);
+const isFetchingUpdateArticle = ref(false);
 const isUpdateEditingEnabled = ref(false);
 
 const isTitleValid = computed(() => {
@@ -186,6 +190,27 @@ const hasFetchedUpdateArticle = computed(() => {
 });
 const isCurrentArticleReadOnly = computed(() => {
     return editorMode.value === 'update' && !isUpdateEditingEnabled.value;
+});
+const isSelectedArticlePublished = computed(() => {
+    return originalUpdateArticle.status === 'PUBLISHED';
+});
+const canPublishArticle = computed(() => {
+    return editorMode.value === 'update' &&
+        hasFetchedUpdateArticle.value &&
+        !isSelectedArticlePublished.value &&
+        !isSaving.value &&
+        !isPublishing.value &&
+        !isFetchingUpdateArticle.value;
+});
+const isPublishButtonDisabled = computed(() => {
+    return !canPublishArticle.value;
+});
+const publishButtonLabel = computed(() => {
+    if (isPublishing.value) {
+        return 'publicando';
+    }
+
+    return isSelectedArticlePublished.value ? 'publicado' : 'publicar';
 });
 
 function syncCurrentArticleWithMode() {
@@ -521,11 +546,13 @@ function handleSuggestionClick(suggestion) {
 
             <div class="flex w-full items-end justify-end mt-5">
                 <div class="flex p-3 bg-white shadow-lg">
-                    <button class="flex justify-center items-center sm:text-lg text-white h-7 sm:h-8 w-24 sm:w-28 mr-1 rounded-lg bg-[#5D00F5] disabled:bg-[#cbb4ff]" :disabled="isSaving" @click="saveArticle">
+                    <button type="button" class="flex justify-center items-center sm:text-lg text-white h-7 sm:h-8 w-24 sm:w-28 mr-1 rounded-lg bg-[#5D00F5] disabled:bg-[#cbb4ff]" :disabled="isSaving" @click="saveArticle">
                         {{ isSaving ? 'salvando' : 'salvar' }}
                     </button>
-                    <button class="flex justify-center items-center sm:text-lg text-white h-7 sm:h-8 w-24 sm:w-28 mr-1 rounded-lg bg-[#5D00F5]">{{ true ? 'publicar': 'publicado' }}</button>
-                    <button class="flex justify-center items-center sm:text-lg text-white h-7 sm:h-8 w-24 sm:w-28 mr-1 rounded-lg bg-[#5D00F5]">arquivar</button>
+                    <button type="button" class="flex justify-center items-center sm:text-lg text-white h-7 sm:h-8 w-24 sm:w-28 mr-1 rounded-lg bg-[#5D00F5] disabled:bg-[#cbb4ff]" :disabled="isPublishButtonDisabled" @click="publishArticle">
+                        {{ publishButtonLabel }}
+                    </button>
+                    <button type="button" class="flex justify-center items-center sm:text-lg text-white h-7 sm:h-8 w-24 sm:w-28 mr-1 rounded-lg bg-[#5D00F5]">arquivar</button>
                 </div>
             </div>
         </div>
