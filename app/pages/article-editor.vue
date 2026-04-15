@@ -315,6 +315,45 @@ async function updateArticle() {
     searchInput.value = currentArticle.title;
 }
 
+async function publishArticle() {
+    if (editorMode.value !== 'update' || !hasFetchedUpdateArticle.value) {
+        alert('Selecione um artigo salvo antes de publicar.');
+        return;
+    }
+
+    if (isUpdateEditingEnabled.value && Object.keys(Article.diff(originalUpdateArticle, currentArticle)).length > 0) {
+        alert('Salve as alterações antes de publicar o artigo.');
+        return;
+    }
+
+    const slugToPublish = normalizeArticleValue(originalUpdateArticle.slug);
+
+    if (!slugToPublish) {
+        alert('Selecione um artigo salvo antes de publicar.');
+        return;
+    }
+
+    isPublishing.value = true;
+
+    try {
+        const response = await $api.post(`/api/articles/${encodeURIComponent(slugToPublish)}/publish`);
+        const publishedArticle = Article.fromApi(response.data);
+
+        alert('Artigo publicado com sucesso!');
+        Article.assign(originalUpdateArticle, publishedArticle);
+        Article.assign(updateModeArticle, publishedArticle);
+        Article.assign(currentArticle, publishedArticle);
+        articleSuggestions.value = articleSuggestions.value.filter(suggestion => suggestion.slug !== slugToPublish);
+        searchByDraftActivated.value = false;
+        searchInput.value = publishedArticle.title;
+    } catch (error) {
+        console.error('There was an error publishing the article!', error);
+        alert('Ocorreu um erro ao publicar o artigo. Por favor, tente novamente.');
+    } finally {
+        isPublishing.value = false;
+    }
+}
+
 function enableUpdateEditing() {
     if (!hasFetchedUpdateArticle.value) {
         return;
