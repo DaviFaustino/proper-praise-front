@@ -367,6 +367,7 @@ const searchInput = ref('');
 const articleSuggestions = ref([]);
 const inputFocused = ref(false);
 const lastArticleSuggestionsSearch = ref('');
+let latestArticleDetailsRequestId = 0;
 
 const filteredArticleSuggestions = computed(() => {
     return articleSuggestions.value.filter(suggestion =>
@@ -431,12 +432,21 @@ function requestArticleSuggestions(firstThreeLetters = '') {
 }
 
 function handleSuggestionClick(suggestion) {
+    const requestId = ++latestArticleDetailsRequestId;
+
     searchInput.value = suggestion.title;
     inputFocused.value = false;
     isUpdateEditingEnabled.value = false;
+    isFetchingUpdateArticle.value = true;
+    Article.reset(originalUpdateArticle);
+    Article.reset(updateModeArticle);
 
     $api.get(`/api/articles/${suggestion.slug}/preview`)
         .then(response => {
+            if (requestId !== latestArticleDetailsRequestId) {
+                return;
+            }
+
             const fetchedArticle = Article.fromApi(response.data);
 
             Article.assign(originalUpdateArticle, fetchedArticle);
@@ -447,7 +457,14 @@ function handleSuggestionClick(suggestion) {
             }
         })
         .catch(() => {
-            console.error('Error fetching article details.');
+            if (requestId === latestArticleDetailsRequestId) {
+                console.error('Error fetching article details.');
+            }
+        })
+        .finally(() => {
+            if (requestId === latestArticleDetailsRequestId) {
+                isFetchingUpdateArticle.value = false;
+            }
         });
 }
 </script>
