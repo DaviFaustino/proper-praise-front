@@ -3,11 +3,13 @@ import { computed, reactive, ref } from 'vue';
 import { marked } from 'marked';
 import ArticleEditingInputField from '~/components/ArticleEditingInputField.vue';
 import ArticleEditingInputTextarea from '~/components/ArticleEditingInputTextarea.vue';
+import { saveArticlePreview } from '~/utils/articlePreview';
 
 const { $api } = useNuxtApp();
 
 definePageMeta({
-    middleware: 'auth'
+    middleware: 'auth',
+    requiresAuth: true
 });
 
 useHead({
@@ -202,6 +204,9 @@ const canPublishArticle = computed(() => {
         !isPublishing.value &&
         !isFetchingUpdateArticle.value;
 });
+const canPreviewArticle = computed(() => {
+    return Article.hasData(currentArticle);
+});
 const isPublishButtonDisabled = computed(() => {
     return !canPublishArticle.value;
 });
@@ -352,6 +357,34 @@ async function publishArticle() {
     } finally {
         isPublishing.value = false;
     }
+}
+
+function previewArticle() {
+    if (!canPreviewArticle.value) {
+        alert('Preencha o artigo antes de abrir a pré-visualização.');
+        return;
+    }
+
+    const previewSlug = normalizeArticleValue(currentArticle.slug).trim();
+
+    if (!previewSlug) {
+        alert('Informe o slug antes de abrir a pré-visualização.');
+        return;
+    }
+
+    const previewSaved = saveArticlePreview({
+        ...Article.toPayload(currentArticle),
+        slug: previewSlug,
+        status: normalizeArticleValue(currentArticle.status)
+    });
+
+    if (!previewSaved) {
+        alert('Não foi possível preparar a pré-visualização.');
+        return;
+    }
+
+    const previewUrl = `/${encodeURIComponent(previewSlug)}/preview?source=editor`;
+    window.open(previewUrl, '_blank', 'noopener,noreferrer');
 }
 
 function enableUpdateEditing() {
@@ -601,14 +634,19 @@ function handleSuggestionClick(suggestion) {
             </div>
 
             <div class="flex w-full items-end justify-end mt-5">
-                <div class="flex p-3 bg-white shadow-lg">
-                    <button type="button" class="flex justify-center items-center sm:text-lg text-white h-7 sm:h-8 w-24 sm:w-28 mr-1 rounded-lg bg-[#5D00F5] disabled:bg-[#cbb4ff]" :disabled="isSaving" @click="saveArticle">
-                        {{ isSaving ? 'salvando' : 'salvar' }}
-                    </button>
-                    <button type="button" class="flex justify-center items-center sm:text-lg text-white h-7 sm:h-8 w-24 sm:w-28 mr-1 rounded-lg bg-[#5D00F5] disabled:bg-[#cbb4ff]" :disabled="isPublishButtonDisabled" @click="publishArticle">
-                        {{ publishButtonLabel }}
-                    </button>
-                    <button type="button" class="flex justify-center items-center sm:text-lg text-white h-7 sm:h-8 w-24 sm:w-28 mr-1 rounded-lg bg-[#5D00F5]">arquivar</button>
+                <div class="flex justify-between w-full sm:w-fit sm:gap-1 p-3 bg-white shadow-lg">
+                    <div class="flex flex-col sm:flex-row w-fit gap-1">
+                        <button type="button" class="flex justify-center items-center sm:text-lg text-white h-7 sm:h-8 w-24 sm:w-28 rounded-lg bg-[#5D00F5] disabled:bg-[#cbb4ff]" :disabled="!canPreviewArticle" @click="previewArticle">visualizar</button>
+                        <button type="button" class="flex justify-center items-center sm:text-lg text-white h-7 sm:h-8 w-24 sm:w-28 rounded-lg bg-[#5D00F5]">arquivar</button>
+                    </div>
+                    <div class="flex flex-col sm:flex-row w-fit gap-1">
+                        <button type="button" class="flex justify-center items-center sm:text-lg text-white h-7 sm:h-8 w-24 sm:w-28 rounded-lg bg-[#5D00F5] disabled:bg-[#cbb4ff]" :disabled="isSaving" @click="saveArticle">
+                            {{ isSaving ? 'salvando' : 'salvar' }}
+                        </button>
+                        <button type="button" class="flex justify-center items-center sm:text-lg text-white h-7 sm:h-8 w-24 sm:w-28 rounded-lg bg-[#5D00F5] disabled:bg-[#cbb4ff]" :disabled="isPublishButtonDisabled" @click="publishArticle">
+                            {{ publishButtonLabel }}
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
