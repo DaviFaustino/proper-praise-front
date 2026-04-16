@@ -14,7 +14,7 @@ export default defineNuxtRouteMiddleware(async (to) => {
         setIsAuthenticated(true);
     } catch (error) {
         setIsAuthenticated(false);
-        if (to.path === '/article-editor') {
+        if (to.meta.requiresAuth) {
             return navigateTo('/login');
         }
     }
