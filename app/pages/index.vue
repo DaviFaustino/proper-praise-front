@@ -300,7 +300,8 @@ onMounted(() => {
 
     <div v-if="isVersionsListVisible" class="flex flex-col items-center w-fit mt-5 mb-10 rounded-2xl" :class="{ 'opacity-50 pointer-events-none': isLoading }">
         <ul class="flex flex-col max-w-[100vw] px-2">
-            <li v-for="versionId in Array.from({ length: versions.values.length }, (_, index) => index)" class="bg-white max-w-full rounded-xl p-1 m-1 shadow-xl">
+            <template v-for="versionId in Array.from({ length: versions.values.length }, (_, index) => index)" :key="versions.values[versionId].id ?? versionId">
+            <li class="bg-white max-w-full rounded-xl p-1 m-1 shadow-xl">
                 <div class="max-w-full rounded-lg p-[1px] m-2 bg-gradient-to-r from-[#5D00F5]" :class="`to-[${dynamicsColors[versions.values[versionId].songDynamics]}]`">
                     <div class="max-w-full flex flex-col w-[26rem] sm:w-[28rem] md:w-[33rem] bg-white rounded-[7px] p-2">
                         <div class="flex">
@@ -336,11 +337,19 @@ onMounted(() => {
                             </div>
                         </div>
                         <div class="flex flex-wrap w-full mt-2">
-                            <span v-for="theme in versions.values[versionId].themes" class="mr-2 mt-1 px-2 rounded-lg text-white bg-[#5D00F5]">{{ theme }}</span>
+                            <span v-for="theme in versions.values[versionId].themes" :key="theme" class="mr-2 mt-1 px-2 rounded-lg text-white bg-[#5D00F5]">{{ theme }}</span>
                         </div>
                     </div>
                 </div>
             </li>
+            <li v-if="versionId === 2" class="my-3 flex justify-center">
+                <AdvertisementGrid
+                    :regular-count="3"
+                    :bait-count="1"
+                    placement="home-song-results"
+                />
+            </li>
+            </template>
         </ul>
 
         <div class="flex bg-white shadow-xl rounded-xl items-center justify-center mt-5 py-2 px-5 space-x-2">
