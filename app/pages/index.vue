@@ -301,54 +301,54 @@ onMounted(() => {
     <div v-if="isVersionsListVisible" class="flex flex-col items-center w-fit mt-5 mb-10 rounded-2xl" :class="{ 'opacity-50 pointer-events-none': isLoading }">
         <ul class="flex flex-col max-w-[100vw] px-2">
             <template v-for="versionId in Array.from({ length: versions.values.length }, (_, index) => index)" :key="versions.values[versionId].id ?? versionId">
-            <li class="bg-white max-w-full rounded-xl p-1 m-1 shadow-xl">
-                <div class="max-w-full rounded-lg p-[1px] m-2 bg-gradient-to-r from-[#5D00F5]" :class="`to-[${dynamicsColors[versions.values[versionId].songDynamics]}]`">
-                    <div class="max-w-full flex flex-col w-[26rem] sm:w-[28rem] md:w-[33rem] bg-white rounded-[7px] p-2">
-                        <div class="flex">
-                            <div class="flex flex-col w-full text-[#5D00F5]">
-                                <div class="flex w-full justify-between">
-                                    <span class="text-xl font-bold">{{ versions.values[versionId].title }}</span>
-                                    <button v-if="isAuthenticated" @click="versionToEdit=versionId; showUpdateVersionModal=true" class="flex justify-center h-6 w-16 mr-1 rounded-lg border border-[#5D00F5]">
-                                        <span>editar</span>
-                                    </button>
-                                </div>
-                                <span>{{ versions.values[versionId].owner }}</span>
-                            </div>
-                            <div class="flex flex-col items-center" >
-                                <div class="flex w-12 h-6 rounded-md items-center justify-center" :class="`bg-[${dynamicsColors[versions.values[versionId].songDynamics]}]`">
-                                    <span class="text-white">{{ versions.values[versionId].tone }}</span>
-                                </div>
-                                <a :href="versions.values[versionId].links[0]" target="_blank" rel="noopener noreferrer" class="flex w-full items-center">
-                                    <svg fill="#5D00F5" class="size-6 ml-[1px]" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 310 310" xml:space="preserve" preserveAspectRatio="none">
-                                        <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
-                                        <g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g>
-                                        <g id="SVGRepo_iconCarrier">
-                                            <g id="XMLID_822_">
-                                                <path id="XMLID_823_" d="M297.917,64.645c-11.19-13.302-31.85-18.728-71.306-18.728H83.386c-40.359,0-61.369,5.776-72.517,19.938 C0,79.663,0,100.008,0,128.166v53.669c0,54.551,12.896,82.248,83.386,82.248h143.226c34.216,0,53.176-4.788,65.442-16.527 C304.633,235.518,310,215.863,310,181.835v-53.669C310,98.471,309.159,78.006,297.917,64.645z M199.021,162.41l-65.038,33.991 c-1.454,0.76-3.044,1.137-4.632,1.137c-1.798,0-3.592-0.484-5.181-1.446c-2.992-1.813-4.819-5.056-4.819-8.554v-67.764 c0-3.492,1.822-6.732,4.808-8.546c2.987-1.814,6.702-1.938,9.801-0.328l65.038,33.772c3.309,1.718,5.387,5.134,5.392,8.861 C204.394,157.263,202.325,160.684,199.021,162.41z"></path>
-                                            </g>
-                                        </g>
-                                    </svg>
-                                    <div class="flex flex-col h-full">
-                                        <span class="text-[#5D00F5] text-[9px] h-2 mt-[1px] font-bold">You</span>
-                                        <span class="text-[#5D00F5] text-[9px] h-2 font-bold">Tube</span>
+                <li class="bg-white max-w-full rounded-xl p-1 m-1 shadow-xl">
+                    <div class="max-w-full rounded-lg p-[1px] m-2 bg-gradient-to-r from-[#5D00F5]" :class="`to-[${dynamicsColors[versions.values[versionId].songDynamics]}]`">
+                        <div class="max-w-full flex flex-col w-[26rem] sm:w-[28rem] md:w-[33rem] bg-white rounded-[7px] p-2">
+                            <div class="flex">
+                                <div class="flex flex-col w-full text-[#5D00F5]">
+                                    <div class="flex w-full justify-between">
+                                        <span class="text-xl font-bold">{{ versions.values[versionId].title }}</span>
+                                        <button v-if="isAuthenticated" @click="versionToEdit=versionId; showUpdateVersionModal=true" class="flex justify-center h-6 w-16 mr-1 rounded-lg border border-[#5D00F5]">
+                                            <span>editar</span>
+                                        </button>
                                     </div>
-                                    <div class="absolute w-12 h-5 border-[1px] rounded border-[#5D00F5]"></div>
-                                </a>
+                                    <span>{{ versions.values[versionId].owner }}</span>
+                                </div>
+                                <div class="flex flex-col items-center" >
+                                    <div class="flex w-12 h-6 rounded-md items-center justify-center" :class="`bg-[${dynamicsColors[versions.values[versionId].songDynamics]}]`">
+                                        <span class="text-white">{{ versions.values[versionId].tone }}</span>
+                                    </div>
+                                    <a :href="versions.values[versionId].links[0]" target="_blank" rel="noopener noreferrer" class="flex w-full items-center">
+                                        <svg fill="#5D00F5" class="size-6 ml-[1px]" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 310 310" xml:space="preserve" preserveAspectRatio="none">
+                                            <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
+                                            <g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g>
+                                            <g id="SVGRepo_iconCarrier">
+                                                <g id="XMLID_822_">
+                                                    <path id="XMLID_823_" d="M297.917,64.645c-11.19-13.302-31.85-18.728-71.306-18.728H83.386c-40.359,0-61.369,5.776-72.517,19.938 C0,79.663,0,100.008,0,128.166v53.669c0,54.551,12.896,82.248,83.386,82.248h143.226c34.216,0,53.176-4.788,65.442-16.527 C304.633,235.518,310,215.863,310,181.835v-53.669C310,98.471,309.159,78.006,297.917,64.645z M199.021,162.41l-65.038,33.991 c-1.454,0.76-3.044,1.137-4.632,1.137c-1.798,0-3.592-0.484-5.181-1.446c-2.992-1.813-4.819-5.056-4.819-8.554v-67.764 c0-3.492,1.822-6.732,4.808-8.546c2.987-1.814,6.702-1.938,9.801-0.328l65.038,33.772c3.309,1.718,5.387,5.134,5.392,8.861 C204.394,157.263,202.325,160.684,199.021,162.41z"></path>
+                                                </g>
+                                            </g>
+                                        </svg>
+                                        <div class="flex flex-col h-full">
+                                            <span class="text-[#5D00F5] text-[9px] h-2 mt-[1px] font-bold">You</span>
+                                            <span class="text-[#5D00F5] text-[9px] h-2 font-bold">Tube</span>
+                                        </div>
+                                        <div class="absolute w-12 h-5 border-[1px] rounded border-[#5D00F5]"></div>
+                                    </a>
+                                </div>
                             </div>
-                        </div>
-                        <div class="flex flex-wrap w-full mt-2">
-                            <span v-for="theme in versions.values[versionId].themes" :key="theme" class="mr-2 mt-1 px-2 rounded-lg text-white bg-[#5D00F5]">{{ theme }}</span>
+                            <div class="flex flex-wrap w-full mt-2">
+                                <span v-for="theme in versions.values[versionId].themes" :key="theme" class="mr-2 mt-1 px-2 rounded-lg text-white bg-[#5D00F5]">{{ theme }}</span>
+                            </div>
                         </div>
                     </div>
-                </div>
-            </li>
-            <li v-if="versionId === 2" class="my-3 flex justify-center">
-                <AdvertisementGrid
-                    :regular-count="3"
-                    :bait-count="1"
-                    placement="home-song-results"
-                />
-            </li>
+                </li>
+                <li v-if="versionId === 2" class="my-3 flex justify-center">
+                    <AdvertisementGrid
+                        :regular-count="3"
+                        :bait-count="1"
+                        placement="home-song-results"
+                    />
+                </li>
             </template>
         </ul>
 
