@@ -184,6 +184,13 @@ useHead(() => {
                 <div class="markdown-content">
                     <div v-html="renderedArticle"></div>
                 </div>
+
+                <AdvertisementGrid
+                    class="mx-auto mt-8"
+                    :regular-count="3"
+                    :bait-count="1"
+                    placement="article-view"
+                />
             </article>
         </div>
     </div>
