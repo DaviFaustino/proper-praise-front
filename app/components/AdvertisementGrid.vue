@@ -130,7 +130,7 @@ onBeforeUnmount(() => {
             :href="getAdvertisementClickUrl(advertisement.id)" target="_blank" rel="noopener sponsored"
             class="group flex aspect-square min-w-0 flex-col overflow-hidden rounded-lg border border-[#5D00F5]/20 bg-[#F8F5FF] transition hover:border-[#5D00F5] hover:shadow-md">
             <div class="flex min-h-0 flex-1 items-center justify-center overflow-hidden bg-white p-1">
-                <img v-if="advertisement.imageUrl" :src="advertisement.imageUrl" :alt="advertisement.title"
+                <img v-if="advertisement.imageUrl" :src="advertisement.imageUrl" :alt="advertisement.title" referrerpolicy="no-referrer"
                     class="h-full w-full object-contain transition group-hover:scale-[1.02]" loading="lazy">
                 <div v-else class="flex h-full w-full items-center justify-center p-3 text-center text-sm font-bold">
                     {{ advertisement.title }}
