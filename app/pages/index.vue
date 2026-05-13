@@ -271,18 +271,24 @@ onMounted(() => {
                 </div>
 
                 <div v-if="byThemeOn" class=" w-[20rem] sm:w-96">
-                    <button class="flex items-center space-x-2 mb-0 sm:mb-1 text-lg" @click="dynamicTrackOn = !dynamicTrackOn">
-                        <img :src="arrowicon" alt="glass" class="w-5 h-7 my-1 ml-2" :class="[ dynamicTrackOn ? 'rotate-180' : '' ]"/>
-                        <div class="text-[#5D00F5]" v-if="!dynamicTrackOn">definir dinâmica</div>
-                    </button>
+                    <div class="flex py-3 space-x-2 justify-center w-fit">
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" v-model="dynamicTrackOn" class="sr-only peer">
+                            <div class="w-7 h-4 bg-gray-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[10px] sm:after:top-[12px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-[#5D00F5]"></div>
+                        </label>
 
-                    <div id="track" class="relative w-[20rem] sm:w-96 h-4 rounded-2xl top-1/2 -translate-y-1/2 bg-cover bg-center" style="background: linear-gradient(90deg,rgba(0, 188, 250, 1) 0%, rgba(93, 0, 245, 1) 50%, rgba(245, 1, 6, 1) 100%);" v-if="dynamicTrackOn" @mousedown="startDragging">
-                        <div class="absolute h-5 border-4 border-gray-700 rounded-2xl top-1/2 -translate-y-1/2 pointer-events-none" :class="[isSearchInputFull ? 'w-10 sm:w-12' : 'w-[10px] sm:w-3' ]" :style="{left: knobX + '%'}"></div>
+                        <div class="flex items-center mb-0 mt-1 sm:mb-1 text-lg text-[#5D00F5]">dinâmica/andamento</div>
+                    </div>
+
+                    <div :class="{ 'opacity-40': !dynamicTrackOn }">
+                        <div id="track" class="relative w-[20rem] sm:w-96 h-4 rounded-2xl top-1/2 -translate-y-1/2 bg-cover bg-center" style="background: linear-gradient(90deg,rgba(0, 188, 250, 1) 0%, rgba(93, 0, 245, 1) 50%, rgba(245, 1, 6, 1) 100%);" @mousedown="startDragging">
+                            <div v-if="dynamicTrackOn" class="absolute h-5 border-4 border-gray-700 rounded-2xl top-1/2 -translate-y-1/2 pointer-events-none" :class="[isSearchInputFull ? 'w-10 sm:w-12' : 'w-[10px] sm:w-3' ]" :style="{left: knobX + '%'}"></div>
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <div :class="[ dynamicTrackOn || !byThemeOn ? 'h-8': 'h-4']"></div>
+            <div :class="[ !byThemeOn ? 'h-8': 'h-4']"></div>
             <div class="bg-white p-2 rounded-xl shadow-xl sm:shadow-none">
                 <button type="button" :disabled="isRequestButtonDisabled" @click="newSearch(0, false)" class="flex items-center border-[1px] border-[#5D00F5] rounded-lg py-1 px-2 space-x-2" :class="{ 'opacity-60': isRequestButtonDisabled }">
                     <img :src="mglassicon" alt="glass" class="size-5" draggable="false">
