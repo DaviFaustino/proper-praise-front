@@ -342,7 +342,7 @@ onMounted(() => {
                         </div>
                     </div>
                 </li>
-                <li v-if="versionId === 2" class="my-3 flex justify-center">
+                <li v-if="versionId === 2 || (versions.values.length < 3 && versionId === versions.values.length - 1)" class="my-3 flex justify-center">
                     <AdvertisementGrid
                         :regular-count="3"
                         :bait-count="1"
