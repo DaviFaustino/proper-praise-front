@@ -37,6 +37,7 @@ function createEmptyArticle() {
         ogDescription: '',
         ogImage: '',
         body: '',
+        originalContent: '',
         status: ''
     };
 }
@@ -57,6 +58,10 @@ function extractArticleBody(content, title) {
     parsedContent = parsedContent.replace(/^<div class="publication-date">.*?<\/div>\n*/s, '');
 
     return parsedContent.replace(/^\n+/, '');
+}
+
+function buildArticlePreviewContent(article) {
+    return `# ${normalizeArticleValue(article.title)}\n\n<div class="publication-date">${publicationMessage}</div>\n\n${normalizeArticleValue(article.body)}`;
 }
 
 const Article = {
@@ -87,11 +92,12 @@ const Article = {
             ogDescription: normalizeArticleValue(article.ogDescription ?? article.seoMetadata?.ogDescription),
             ogImage: normalizeArticleValue(article.ogImageUrl ?? article.seoMetadata?.ogImageUrl),
             body: extractArticleBody(article.content, article.title),
+            originalContent: normalizeArticleValue(article.content),
             status: normalizeArticleValue(article.status)
         });
     },
     buildContent(article) {
-        return `# ${normalizeArticleValue(article.title)}\n\n<div class="publication-date">${publicationMessage}</div>\n\n${normalizeArticleValue(article.body)}`;
+        return normalizeArticleValue(article.body);
     },
     toPayload(article) {
         return {
@@ -113,10 +119,16 @@ const Article = {
         const updatedPayload = Article.toPayload(updatedArticle);
         const changedFields = {};
 
-        for (const key of ['title', 'slug', 'content', 'excerpt']) {
+        const originalContent = normalizeArticleValue(originalArticle.originalContent) || originalPayload.content;
+
+        for (const key of ['title', 'slug', 'excerpt']) {
             if (originalPayload[key] !== updatedPayload[key]) {
                 changedFields[key] = updatedPayload[key];
             }
+        }
+
+        if (originalContent !== updatedPayload.content) {
+            changedFields.content = updatedPayload.content;
         }
 
         const changedSeoMetadata = {};
@@ -184,7 +196,7 @@ const isFormValid = computed(() => {
         isOgImageValid.value;
 });
 const renderedArticle = computed(() => {
-    return marked(Article.buildContent(currentArticle));
+    return marked(buildArticlePreviewContent(currentArticle));
 });
 
 const hasFetchedUpdateArticle = computed(() => {
@@ -316,6 +328,9 @@ async function updateArticle() {
     alert('Artigo atualizado com sucesso!');
     Article.assign(originalUpdateArticle, currentArticle);
     Article.assign(updateModeArticle, currentArticle);
+    originalUpdateArticle.originalContent = Article.buildContent(currentArticle);
+    updateModeArticle.originalContent = Article.buildContent(currentArticle);
+    currentArticle.originalContent = Article.buildContent(currentArticle);
     isUpdateEditingEnabled.value = false;
     searchInput.value = currentArticle.title;
 }
