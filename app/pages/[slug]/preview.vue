@@ -1,7 +1,7 @@
 <script setup>
 import { computed, onMounted, reactive, ref } from 'vue';
-import { marked } from 'marked';
 import { readArticlePreview } from '~/utils/articlePreview';
+import { renderArticleMarkdown } from '~/utils/articleRendering';
 
 definePageMeta({
     middleware: 'auth',
@@ -23,6 +23,8 @@ const article = reactive({
     slug: '',
     excerpt: '',
     content: '',
+    ogTitle: '',
+    ogImageUrl: '',
     status: ''
 });
 
@@ -31,7 +33,7 @@ const errorMessage = ref('');
 const previewSource = ref('');
 
 const renderedArticle = computed(() => {
-    return article.content ? marked(article.content) : '';
+    return renderArticleMarkdown(article.content, article.ogImageUrl, article.ogTitle || article.title);
 });
 
 const statusLabel = computed(() => {
@@ -59,6 +61,8 @@ function assignArticle(nextArticle = {}) {
     article.slug = normalizeArticleValue(nextArticle.slug);
     article.excerpt = normalizeArticleValue(nextArticle.excerpt);
     article.content = normalizeArticleValue(nextArticle.content);
+    article.ogTitle = normalizeArticleValue(nextArticle.ogTitle ?? nextArticle.seoMetadata?.ogTitle);
+    article.ogImageUrl = normalizeArticleValue(nextArticle.ogImageUrl ?? nextArticle.seoMetadata?.ogImageUrl);
     article.status = normalizeArticleValue(nextArticle.status);
 }
 

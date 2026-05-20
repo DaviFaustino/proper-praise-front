@@ -1,9 +1,9 @@
 <script setup>
 import { computed, reactive, ref } from 'vue';
-import { marked } from 'marked';
 import ArticleEditingInputField from '~/components/ArticleEditingInputField.vue';
 import ArticleEditingInputTextarea from '~/components/ArticleEditingInputTextarea.vue';
 import { saveArticlePreview } from '~/utils/articlePreview';
+import { isAllowedOgImageUrl, renderArticleMarkdown } from '~/utils/articleRendering';
 
 const { $api } = useNuxtApp();
 
@@ -183,7 +183,7 @@ const isOgDescriptionValid = computed(() => {
 });
 const isOgImageValid = computed(() => {
     return currentArticle.ogImage === '' ||
-        (currentArticle.ogImage.length > 0 && currentArticle.ogImage.startsWith('https://kdlouvor.com/'));
+        isAllowedOgImageUrl(currentArticle.ogImage);
 });
 const isFormValid = computed(() => {
     return isTitleValid.value &&
@@ -196,7 +196,11 @@ const isFormValid = computed(() => {
         isOgImageValid.value;
 });
 const renderedArticle = computed(() => {
-    return marked(buildArticlePreviewContent(currentArticle));
+    return renderArticleMarkdown(
+        buildArticlePreviewContent(currentArticle),
+        currentArticle.ogImage,
+        currentArticle.ogTitle || currentArticle.title
+    );
 });
 
 const hasFetchedUpdateArticle = computed(() => {

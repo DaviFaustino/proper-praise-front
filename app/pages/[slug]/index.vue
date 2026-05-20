@@ -1,6 +1,6 @@
 <script setup>
 import { computed } from 'vue';
-import { marked } from 'marked';
+import { isAllowedOgImageUrl, renderArticleMarkdown } from '~/utils/articleRendering';
 
 definePageMeta({
     middleware: 'auth'
@@ -92,7 +92,12 @@ const {
 
 const articleNotFound = computed(() => articleResult.value?.notFound === true);
 const article = computed(() => normalizeArticle(articleResult.value?.article));
-const renderedArticle = computed(() => article.value.content ? marked(article.value.content) : '');
+const allowedOgImageUrl = computed(() => isAllowedOgImageUrl(article.value.ogImageUrl) ? article.value.ogImageUrl : '');
+const renderedArticle = computed(() => renderArticleMarkdown(
+    article.value.content,
+    allowedOgImageUrl.value,
+    article.value.ogTitle || article.value.title
+));
 const pageTitle = computed(() => article.value.metaTitle || article.value.title || 'Artigo | KDLouvor');
 const pageDescription = computed(() => article.value.metaDescription || article.value.excerpt || 'Leia artigos sobre louvor, adoração e vida cristã no KDLouvor.');
 const canonicalUrl = computed(() => `https://kdlouvor.com/${encodeURIComponent(article.value.slug || requestedSlug.value)}`);
@@ -125,15 +130,15 @@ useHead(() => {
         { property: 'og:description', content: article.value.ogDescription || pageDescription.value },
         { property: 'og:type', content: 'article' },
         { property: 'og:url', content: canonicalUrl.value },
-        { name: 'twitter:card', content: article.value.ogImageUrl ? 'summary_large_image' : 'summary' },
+        { name: 'twitter:card', content: allowedOgImageUrl.value ? 'summary_large_image' : 'summary' },
         { name: 'twitter:title', content: article.value.ogTitle || pageTitle.value },
         { name: 'twitter:description', content: article.value.ogDescription || pageDescription.value }
     ];
 
-    if (article.value.ogImageUrl) {
+    if (allowedOgImageUrl.value) {
         meta.push(
-            { property: 'og:image', content: article.value.ogImageUrl },
-            { name: 'twitter:image', content: article.value.ogImageUrl }
+            { property: 'og:image', content: allowedOgImageUrl.value },
+            { name: 'twitter:image', content: allowedOgImageUrl.value }
         );
     }
 
