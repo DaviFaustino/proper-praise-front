@@ -51,6 +51,15 @@
   height: auto;
 }
 
+.markdown-content .article-og-image {
+  display: block;
+  width: 100%;
+  max-width: 720px;
+  height: auto;
+  margin: 1.3rem auto 1.7rem;
+  border-radius: 8px;
+}
+
 .publication-date {
   font-size: 0.9rem;
   font-style: italic;
@@ -100,6 +109,11 @@
   }
 
   .markdown-content iframe {
+    margin-top: 1.5rem;
+    margin-bottom: 2rem;
+  }
+
+  .markdown-content .article-og-image {
     margin-top: 1.5rem;
     margin-bottom: 2rem;
   }
