@@ -3,7 +3,7 @@ import { computed, reactive, ref } from 'vue';
 import ArticleEditingInputField from '~/components/ArticleEditingInputField.vue';
 import ArticleEditingInputTextarea from '~/components/ArticleEditingInputTextarea.vue';
 import { saveArticlePreview } from '~/utils/articlePreview';
-import { isAllowedOgImageUrl, renderArticleMarkdown } from '~/utils/articleRendering';
+import { isAllowedOgImageUrl, renderArticleMarkdownParts } from '~/utils/articleRendering';
 
 const { $api } = useNuxtApp();
 
@@ -195,8 +195,8 @@ const isFormValid = computed(() => {
         isOgDescriptionValid.value &&
         isOgImageValid.value;
 });
-const renderedArticle = computed(() => {
-    return renderArticleMarkdown(
+const renderedArticleParts = computed(() => {
+    return renderArticleMarkdownParts(
         buildArticlePreviewContent(currentArticle),
         currentArticle.ogImage,
         currentArticle.ogTitle || currentArticle.title
@@ -648,7 +648,18 @@ function handleSuggestionClick(suggestion) {
                 </div>
                 <div class="flex flex-col w-full">
                     <label class="w-12 text-center text-sm sm:text-md bg-white">html</label>
-                    <div class="markdown-content bg-white w-full h-[30rem] p-4 text-sm sm:text-md shadow-xl overflow-auto" v-html="renderedArticle"></div>
+                    <div class="markdown-content bg-white w-full h-[30rem] p-4 text-sm sm:text-md shadow-xl overflow-auto">
+                        <template v-for="(articlePart, index) in renderedArticleParts" :key="index">
+                            <div v-if="articlePart" v-html="articlePart"></div>
+                            <AdvertisementGrid
+                                v-if="index < renderedArticleParts.length - 1"
+                                class="mx-auto my-8"
+                                :regular-count="3"
+                                :bait-count="1"
+                                placement="article-editor-inline"
+                            />
+                        </template>
+                    </div>
                 </div>
             </div>
 

@@ -1,7 +1,7 @@
 <script setup>
 import { computed, onMounted, reactive, ref } from 'vue';
 import { readArticlePreview } from '~/utils/articlePreview';
-import { renderArticleMarkdown } from '~/utils/articleRendering';
+import { renderArticleMarkdownParts } from '~/utils/articleRendering';
 
 definePageMeta({
     middleware: 'auth',
@@ -32,8 +32,8 @@ const isLoading = ref(true);
 const errorMessage = ref('');
 const previewSource = ref('');
 
-const renderedArticle = computed(() => {
-    return renderArticleMarkdown(article.content, article.ogImageUrl, article.ogTitle || article.title);
+const renderedArticleParts = computed(() => {
+    return renderArticleMarkdownParts(article.content, article.ogImageUrl, article.ogTitle || article.title);
 });
 
 const statusLabel = computed(() => {
@@ -156,7 +156,16 @@ onMounted(() => {
 
             <article v-else class="markdown-content bg-white p-5 shadow-xl sm:p-10">
                 <p v-if="article.excerpt" class="preview-excerpt">{{ article.excerpt }}</p>
-                <div v-html="renderedArticle"></div>
+                <template v-for="(articlePart, index) in renderedArticleParts" :key="index">
+                    <div v-if="articlePart" v-html="articlePart"></div>
+                    <AdvertisementGrid
+                        v-if="index < renderedArticleParts.length - 1"
+                        class="mx-auto my-8"
+                        :regular-count="3"
+                        :bait-count="1"
+                        placement="article-preview-inline"
+                    />
+                </template>
             </article>
         </div>
     </div>

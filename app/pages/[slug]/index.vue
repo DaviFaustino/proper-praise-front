@@ -1,6 +1,6 @@
 <script setup>
 import { computed } from 'vue';
-import { isAllowedOgImageUrl, renderArticleMarkdown } from '~/utils/articleRendering';
+import { hasArticleAdvertisementPlaceholder, isAllowedOgImageUrl, renderArticleMarkdownParts } from '~/utils/articleRendering';
 
 definePageMeta({
     middleware: 'auth'
@@ -93,11 +93,12 @@ const {
 const articleNotFound = computed(() => articleResult.value?.notFound === true);
 const article = computed(() => normalizeArticle(articleResult.value?.article));
 const allowedOgImageUrl = computed(() => isAllowedOgImageUrl(article.value.ogImageUrl) ? article.value.ogImageUrl : '');
-const renderedArticle = computed(() => renderArticleMarkdown(
+const renderedArticleParts = computed(() => renderArticleMarkdownParts(
     article.value.content,
     allowedOgImageUrl.value,
     article.value.ogTitle || article.value.title
 ));
+const hasInlineAdvertisements = computed(() => hasArticleAdvertisementPlaceholder(article.value.content));
 const pageTitle = computed(() => article.value.metaTitle || article.value.title || 'Artigo | KDLouvor');
 const pageDescription = computed(() => article.value.metaDescription || article.value.excerpt || 'Leia artigos sobre louvor, adoração e vida cristã no KDLouvor.');
 const canonicalUrl = computed(() => `https://kdlouvor.com/${encodeURIComponent(article.value.slug || requestedSlug.value)}`);
@@ -187,10 +188,20 @@ useHead(() => {
                 </header>
 
                 <div class="markdown-content">
-                    <div v-html="renderedArticle"></div>
+                    <template v-for="(articlePart, index) in renderedArticleParts" :key="index">
+                        <div v-if="articlePart" v-html="articlePart"></div>
+                        <AdvertisementGrid
+                            v-if="index < renderedArticleParts.length - 1"
+                            class="mx-auto my-8"
+                            :regular-count="3"
+                            :bait-count="1"
+                            placement="article-inline"
+                        />
+                    </template>
                 </div>
 
                 <AdvertisementGrid
+                    v-if="!hasInlineAdvertisements"
                     class="mx-auto mt-8"
                     :regular-count="3"
                     :bait-count="1"
