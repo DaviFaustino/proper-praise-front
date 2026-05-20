@@ -1,6 +1,7 @@
 import { marked } from 'marked';
 
 export const ARTICLE_OG_IMAGE_PLACEHOLDER = '{{og_image}}';
+export const ARTICLE_ADVERTISEMENT_PLACEHOLDER = '{{advertisement}}';
 
 const ALLOWED_OG_IMAGE_ORIGIN = 'https://kdlouvor.com';
 
@@ -51,4 +52,14 @@ export function injectArticleOgImage(content, imageUrl, altText = '') {
 
 export function renderArticleMarkdown(content, imageUrl = '', altText = '') {
     return marked(injectArticleOgImage(content, imageUrl, altText));
+}
+
+export function renderArticleMarkdownParts(content, imageUrl = '', altText = '') {
+    return injectArticleOgImage(content, imageUrl, altText)
+        .split(ARTICLE_ADVERTISEMENT_PLACEHOLDER)
+        .map(part => marked(part));
+}
+
+export function hasArticleAdvertisementPlaceholder(content) {
+    return normalizeArticleValue(content).includes(ARTICLE_ADVERTISEMENT_PLACEHOLDER);
 }
