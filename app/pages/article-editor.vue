@@ -637,6 +637,11 @@ function handleSuggestionClick(suggestion) {
             <div class="flex w-fit mt-5 px-2 justify-center bg-white border-[#5D00F5] border-l-2 shadow-md">
                 <label class="text-center text-md sm:text-lg font-bold">Conteúdo</label>
             </div>
+
+            <p class="bg-white w-fit my-5 p-1 text-xs text-gray-600 sm:text-sm">
+                Use <code class="font-mono text-[#5D00F5]" v-text="'{{og_image}}'"></code> para inserir a imagem OG e <code class="font-mono text-[#5D00F5]" v-text="'{{advertisement}}'"></code> para inserir anúncios.
+            </p>
+
             <div class="flex flex-col lg:flex-row w-full mt-5 lg:space-x-10 space-y-10 lg:space-y-0">
                 <div class="flex flex-col w-full">
                     <label class="w-20 text-center text-sm sm:text-md bg-white">markdown</label>
