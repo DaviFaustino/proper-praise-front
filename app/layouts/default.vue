@@ -19,13 +19,21 @@ const showLogoutConfirm = ref(false);
             <img src="/images/background.webp" class="fixed z-0 pointer-events-none object-cover min-h-screen" alt="Background">
         </picture>
 
-        <header class="relative flex items-center h-10 w-full bg-[#5D00F5]">
-            <span class="ml-2 text-white font-bold text-xl">
+        <header class="relative flex min-h-10 w-full items-center bg-[#5D00F5] px-2 py-1">
+            <span class="text-white font-bold text-xl">
                 <RouterLink to="/">KDLouvor</RouterLink>
             </span>
-            <div class="w-full"></div>
-            <a href="https://www.instagram.com/kdlouvor" target="_blank" rel="noopener noreferrer">
-                <svg class="size-6 mr-2" viewBox="0 0 24 24" fill="#ffffff" xmlns="http://www.w3.org/2000/svg" >
+            <nav class="absolute left-1/2 flex -translate-x-1/2 items-center gap-1 font-bold text-white">
+                <RouterLink to="/" class="px-2 hover:bg-white/15" active-class=" border-b-[2px]" >
+                    Home
+                </RouterLink>
+                <RouterLink to="/artigos" class="px-2 hover:bg-white/15" active-class=" border-b-[2px]">
+                    Artigos
+                </RouterLink>
+            </nav>
+            <div class="flex-grow"></div>
+            <a class="pr-2" href="https://www.instagram.com/kdlouvor" target="_blank" rel="noopener noreferrer">
+                <svg class="size-6" viewBox="0 0 24 24" fill="#ffffff" xmlns="http://www.w3.org/2000/svg" >
                     <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
                     <g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g>
                     <g id="SVGRepo_iconCarrier">
@@ -35,8 +43,8 @@ const showLogoutConfirm = ref(false);
                     </g>
                 </svg>
             </a>
-            <a href="https://www.tiktok.com/@kdlouvor" target="_blank" rel="noopener noreferrer">
-                <svg class="size-6 mr-2" fill="#ffffff" viewBox="0 0 32 32" version="1.1" xmlns="http://www.w3.org/2000/svg">
+            <a class="pr-2" href="https://www.tiktok.com/@kdlouvor" target="_blank" rel="noopener noreferrer">
+                <svg class="size-6" fill="#ffffff" viewBox="0 0 32 32" version="1.1" xmlns="http://www.w3.org/2000/svg">
                     <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
                     <g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g>
                     <g id="SVGRepo_iconCarrier">
@@ -45,7 +53,7 @@ const showLogoutConfirm = ref(false);
                     </g>
                 </svg>
             </a>
-            <button v-if="isAuthenticated" @click="showLogoutConfirm=true" class="mr-2 w-[4.5rem] h-7 text-white text-lg font-bold bg-red-600 text-center rounded-lg">sair</button>
+            <button v-if="isAuthenticated" @click="showLogoutConfirm=true" class="w-[4.5rem] h-7 text-white text-lg font-bold bg-red-600 text-center rounded-lg">sair</button>
         </header>
         
         <Transition>
