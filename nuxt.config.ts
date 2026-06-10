@@ -14,6 +14,7 @@ export default defineNuxtConfig({
 
   runtimeConfig: {
     public: {
+      siteUrl: process.env.NUXT_PUBLIC_SITE_URL || 'https://kdlouvor.com',
       backendPublicUrl: process.env.NUXT_PUBLIC_BACKEND_PUBLIC_URL || 'http://localhost:8080',
       backendInternalUrl: process.env.NUXT_PUBLIC_BACKEND_INTERNAL_URL || 'http://localhost:8080',
     },
